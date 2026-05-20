@@ -7,7 +7,8 @@
       "Read(//opt/local/bin/**)",
       "Bash(/opt/local/bin/node --version)",
       "Bash(ls /opt/local/bin/ 2>/dev/null | grep -E \"node|npm|pnpm\" ; ls /opt/homebrew/bin/ 2>/dev/null | grep -E \"node|npm|pnpm\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(xargs cat)"
     ]
   }
 }

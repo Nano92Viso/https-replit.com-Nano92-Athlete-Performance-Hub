@@ -397,21 +397,8 @@ export default function PlayerProfile() {
 
           {/* Player details panel */}
           <div className="bg-card border border-border rounded p-5 flex flex-col gap-4 h-full">
-            {/* Identity */}
+            {/* Details: estado físico + metadatos */}
             <div>
-              <div className="flex items-center gap-3 flex-wrap mb-2">
-                <h1 className="text-xl font-bold text-foreground tracking-tight">{player.name}</h1>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider ${injuryBadge[player.injuryStatus as string] ?? ""}`}>
-                  {player.injuryStatus === "fit" ? <ShieldCheck className="w-3 h-3 mr-1" /> : <AlertTriangle className="w-3 h-3 mr-1" />}
-                  {injuryLabel[player.injuryStatus as string] ?? player.injuryStatus}
-                </span>
-                {alerts.length > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider bg-red-500/10 text-red-400 border-red-500/20">
-                    <AlertTriangle className="w-3 h-3" />
-                    {alerts.length} {alerts.length === 1 ? "alerta" : "alertas"}
-                  </span>
-                )}
-              </div>
               {/* Physical status select */}
               {(() => {
                 const status = player.physicalStatus ?? "available";
