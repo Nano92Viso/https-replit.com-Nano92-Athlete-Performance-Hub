@@ -412,33 +412,40 @@ export default function PlayerProfile() {
                   </span>
                 )}
               </div>
-              {/* Physical status pill selector */}
-              <div className="flex flex-wrap gap-1.5 mt-2 mb-1">
-                {Object.entries(physicalStatusConfig).map(([key, cfg]) => {
-                  const isActive = (player.physicalStatus ?? "available") === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => { if (!isActive) updateStatus.mutate(key); }}
+              {/* Physical status select */}
+              {(() => {
+                const status = player.physicalStatus ?? "available";
+                const cfg = physicalStatusConfig[status] ?? physicalStatusConfig["available"];
+                return (
+                  <div className="flex items-center gap-2 mt-2 mb-1">
+                    <Select
+                      value={status}
+                      onValueChange={v => updateStatus.mutate(v)}
                       disabled={updateStatus.isPending}
-                      title={isActive ? cfg.label : `Cambiar a ${cfg.label}`}
-                      className={[
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full border text-[11px] font-semibold transition-all",
-                        isActive
-                          ? `${cfg.activeBg} ${cfg.color} ${cfg.border} ring-1 ring-inset ${cfg.border}`
-                          : `${cfg.dimBg} ${cfg.color} ${cfg.border} opacity-35 hover:opacity-65`,
-                        updateStatus.isPending ? "cursor-not-allowed" : "cursor-pointer",
-                      ].join(" ")}
                     >
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 flex-shrink-0" />}
-                      {cfg.label}
-                    </button>
-                  );
-                })}
-                {updateStatus.isPending && (
-                  <span className="text-[10px] text-muted-foreground/50 self-center ml-1 animate-pulse">Guardando…</span>
-                )}
-              </div>
+                      <SelectTrigger className={`h-7 w-44 text-[11px] font-semibold border ${cfg.border} ${cfg.activeBg} ${cfg.color}`}>
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-current flex-shrink-0" />
+                          <SelectValue />
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border">
+                        {Object.entries(physicalStatusConfig).map(([key, c]) => (
+                          <SelectItem key={key} value={key} className={`text-[11px] ${c.color}`}>
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0" />
+                              {c.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {updateStatus.isPending && (
+                      <span className="text-[10px] text-muted-foreground/50 animate-pulse">Guardando…</span>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 <span>{player.position}</span>
@@ -683,6 +690,83 @@ export default function PlayerProfile() {
           </div>
         </div>
 
+        {/* ── Interpretation ───────────────────────────────────────────────── */}
+        {neuro?.interpretation && (
+          <div className="bg-card border border-border rounded p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Interpretación del Perfil</h2>
+              {neuro.profileType && (
+                <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider ${profileTypeColor[neuro.profileType] ?? ""}`}>
+                  {neuro.profileType}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">{neuro.interpretation}</p>
+            {neuro.testDate && (
+              <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground/60">
+                <Clock className="w-3 h-3" /> Test: {formatDate(neuro.testDate)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Chronojump placeholder ───────────────────────────────────────── */}
+        <div className="bg-card border border-border rounded p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-4 h-4 text-muted-foreground/60" />
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Imagen Chronojump · Perfil Original</h2>
+            <span className="ml-auto text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground/50">Próximamente</span>
+          </div>
+          <div className="flex gap-5 flex-wrap">
+            <div className="flex-1 min-w-[200px] h-36 rounded-lg border border-dashed border-border/60 bg-secondary/30 flex flex-col items-center justify-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                <Heart className="w-5 h-5 text-muted-foreground/30" />
+              </div>
+              <p className="text-xs text-muted-foreground/50 text-center px-4">Sube aquí la captura del perfil neuromuscular de Chronojump</p>
+              <button disabled className="text-[10px] font-semibold text-muted-foreground/40 border border-border/40 rounded px-3 py-1 cursor-not-allowed">Subir imagen</button>
+            </div>
+            <div className="flex-1 min-w-[200px] flex flex-col justify-center gap-2">
+              <div className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-semibold mb-1">Esta sección incluirá</div>
+              {["Perfil F-V exportado de Chronojump", "Gráfico bilateral / unilateral original", "Curva de potencia original del test", "Imagen adjunta al informe PDF"].map(item => (
+                <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground/60">
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30 flex-shrink-0" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Alerts ───────────────────────────────────────────────────────── */}
+        {alerts.length > 0 && (
+          <div className="bg-card border border-border rounded p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-4 h-4 text-yellow-400" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Alertas de Rendimiento</h2>
+              <span className="ml-auto text-xs text-muted-foreground">{alerts.length} activas</span>
+            </div>
+            <div className="space-y-3">
+              {[...criticalAlerts, ...warningAlerts, ...infoAlerts].map(alert => {
+                const style = alertSeverityStyle[alert.severity] ?? alertSeverityStyle["info"];
+                return (
+                  <div key={alert.id} className={`flex gap-3 p-3 rounded border ${style.bg}`}>
+                    <div className={`w-1 rounded-full flex-shrink-0 self-stretch ${style.bar}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className={`text-xs font-semibold uppercase tracking-wider ${style.icon}`}>{alert.metric}</span>
+                        {alert.value != null && <span className="text-xs text-muted-foreground tabular-nums flex-shrink-0">{typeof alert.value === "number" ? alert.value.toFixed(alert.value < 10 ? 2 : 1) : alert.value}</span>}
+                      </div>
+                      <p className="text-sm text-foreground mt-0.5">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{alert.recommendation}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ── Mapa de lesiones ─────────────────────────────────────────────── */}
         <div className="bg-card border border-border rounded p-5">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -777,83 +861,6 @@ export default function PlayerProfile() {
             )}
           </div>
         </div>
-
-        {/* ── Interpretation ───────────────────────────────────────────────── */}
-        {neuro?.interpretation && (
-          <div className="bg-card border border-border rounded p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Interpretación del Perfil</h2>
-              {neuro.profileType && (
-                <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider ${profileTypeColor[neuro.profileType] ?? ""}`}>
-                  {neuro.profileType}
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{neuro.interpretation}</p>
-            {neuro.testDate && (
-              <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground/60">
-                <Clock className="w-3 h-3" /> Test: {formatDate(neuro.testDate)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Chronojump placeholder ───────────────────────────────────────── */}
-        <div className="bg-card border border-border rounded p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-4 h-4 text-muted-foreground/60" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Imagen Chronojump · Perfil Original</h2>
-            <span className="ml-auto text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground/50">Próximamente</span>
-          </div>
-          <div className="flex gap-5 flex-wrap">
-            <div className="flex-1 min-w-[200px] h-36 rounded-lg border border-dashed border-border/60 bg-secondary/30 flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                <Heart className="w-5 h-5 text-muted-foreground/30" />
-              </div>
-              <p className="text-xs text-muted-foreground/50 text-center px-4">Sube aquí la captura del perfil neuromuscular de Chronojump</p>
-              <button disabled className="text-[10px] font-semibold text-muted-foreground/40 border border-border/40 rounded px-3 py-1 cursor-not-allowed">Subir imagen</button>
-            </div>
-            <div className="flex-1 min-w-[200px] flex flex-col justify-center gap-2">
-              <div className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-semibold mb-1">Esta sección incluirá</div>
-              {["Perfil F-V exportado de Chronojump", "Gráfico bilateral / unilateral original", "Curva de potencia original del test", "Imagen adjunta al informe PDF"].map(item => (
-                <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30 flex-shrink-0" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Alerts ───────────────────────────────────────────────────────── */}
-        {alerts.length > 0 && (
-          <div className="bg-card border border-border rounded p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-4 h-4 text-yellow-400" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Alertas de Rendimiento</h2>
-              <span className="ml-auto text-xs text-muted-foreground">{alerts.length} activas</span>
-            </div>
-            <div className="space-y-3">
-              {[...criticalAlerts, ...warningAlerts, ...infoAlerts].map(alert => {
-                const style = alertSeverityStyle[alert.severity] ?? alertSeverityStyle["info"];
-                return (
-                  <div key={alert.id} className={`flex gap-3 p-3 rounded border ${style.bg}`}>
-                    <div className={`w-1 rounded-full flex-shrink-0 self-stretch ${style.bar}`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={`text-xs font-semibold uppercase tracking-wider ${style.icon}`}>{alert.metric}</span>
-                        {alert.value != null && <span className="text-xs text-muted-foreground tabular-nums flex-shrink-0">{typeof alert.value === "number" ? alert.value.toFixed(alert.value < 10 ? 2 : 1) : alert.value}</span>}
-                      </div>
-                      <p className="text-sm text-foreground mt-0.5">{alert.message}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{alert.recommendation}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* ── Legacy injury history ────────────────────────────────────────── */}
         {injuryHistory.length > 0 && (
