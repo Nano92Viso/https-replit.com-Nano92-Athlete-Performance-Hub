@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run *)",
+      "Bash(which node *)",
+      "Bash(find /Users/nano -maxdepth 6 -name \"pnpm\" -type f 2>/dev/null | head -5; find /usr -maxdepth 5 -name \"node\" -type f 2>/dev/null | head -3)",
+      "Read(//opt/local/bin/**)",
+      "Bash(/opt/local/bin/node --version)",
+      "Bash(ls /opt/local/bin/ 2>/dev/null | grep -E \"node|npm|pnpm\" ; ls /opt/homebrew/bin/ 2>/dev/null | grep -E \"node|npm|pnpm\")",
+      "Bash(git add *)"
+    ]
+  }
+}

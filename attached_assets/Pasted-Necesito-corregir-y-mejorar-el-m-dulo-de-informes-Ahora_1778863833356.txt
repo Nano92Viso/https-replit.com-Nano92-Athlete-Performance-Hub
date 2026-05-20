@@ -1,0 +1,95 @@
+Necesito corregir y mejorar el módulo de informes.
+
+Ahora mismo el informe no reproduce correctamente el radar comparativo ni la tabla de datos como el Excel de referencia.
+
+Quiero crear un módulo específico llamado “Comparador de Tests”.
+
+Objetivo:
+comparar dos tests seleccionados de un mismo jugador y una referencia ideal.
+
+Debe funcionar así:
+
+1. Selector de tests:
+- desplegable “Test anterior”
+- desplegable “Test actual”
+- ambos filtrados por jugador
+- mostrar fecha de cada test
+- botón “Comparar tests”
+
+2. Tabla superior comparativa:
+Debe replicar la lógica visual del Excel:
+- fila Fecha Test 1
+- fila Variables
+- fila Valores Test 1
+- fila Puntuación ideal
+- fila Puntuación Test 1
+- fila Fecha Test 2
+- fila Variables
+- fila Valores Test 2
+- fila Puntuación ideal
+- fila Puntuación Test 2
+
+Variables obligatorias:
+- v(m/s)
+- vmax(m/s)
+- t->vmax(ms)
+- p(W)
+- PmedRel
+- pmax(W)
+- PmaxRel
+- Fmax(N)
+- FmaxRel
+
+3. Colores de puntuación:
+- verde: puntuación buena
+- amarillo: puntuación media
+- rojo: déficit
+- usar los mismos colores en tabla e interpretación
+
+4. Radar comparativo grande:
+Debe parecerse al radar del Excel:
+- línea/polígono Test anterior
+- línea/polígono Test actual
+- línea/polígono Puntuación ideal
+- etiquetas alrededor con todas las variables
+- leyenda inferior
+- fondo con anillos o grid radial
+- tamaño grande y protagonista
+
+Muy importante:
+el radar debe usar las puntuaciones normalizadas, no los valores absolutos, para poder comparar variables diferentes.
+
+5. Cambios entre tests:
+Añadir bloque debajo con:
+- cambio absoluto
+- cambio porcentual
+- si mejora, empeora o se mantiene
+- variable por variable
+
+6. Interpretación automática:
+Generar texto:
+- qué variables mejoran
+- qué variables empeoran
+- qué perfil neuromuscular sugiere
+- qué significa para el entrenamiento
+- qué bloque metodológico priorizar
+
+7. Exportación PDF:
+El PDF debe incluir:
+- tabla comparativa superior
+- radar grande
+- bloque de cambios
+- perfil Load/Explode/Drive
+- recomendaciones metodológicas
+
+8. Diseño:
+Debe mantener estética premium PERFORMANCEIQ, pero respetando la estructura del Excel:
+tabla arriba + radar protagonista + análisis debajo.
+
+9. Importante:
+No reemplaces el radar triangular Load/Explode/Drive.
+Son dos gráficos diferentes:
+- Radar comparativo de variables del test
+- Radar/perfil neuromuscular Load/Explode/Drive
+
+Quiero que ambos puedan existir en el informe.

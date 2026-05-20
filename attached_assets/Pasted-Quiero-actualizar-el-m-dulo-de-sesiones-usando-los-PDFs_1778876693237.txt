@@ -1,0 +1,136 @@
+Quiero actualizar el módulo de sesiones usando los PDFs adjuntos: Volumen.pdf y Ejercicios.pdf.
+
+Objetivo:
+crear un generador/editor de sesiones basado en mi metodología real.
+
+1. Tipos de sesión disponibles:
+- Fuerza explosiva
+- Fuerza potencia
+- Fuerza resistencia / compensatoria
+- Recuperación activa
+
+2. Volúmenes por tipo de sesión:
+Usar Volumen.pdf como referencia principal.
+
+Fuerza explosiva:
+- Isométricos: máximo 2 series
+- Activación: máximo 4 repeticiones
+- Pliometría o técnica de carrera: máximo 2 series y 5 repeticiones
+- 1 ejercicio principal
+- Máximo 3 accesorios
+- Ejercicio principal: 3-4 series máximo
+- Accesorios: 3 series máximo
+- Déficits particulares: 3 series máximo
+
+Fuerza potencia:
+- Isométricos: máximo 2 series
+- Activación: máximo 4 repeticiones
+- Pliometría o técnica de carrera: máximo 2 series y 5 repeticiones
+- 1 ejercicio principal
+- Máximo 1 accesorio
+- Ejercicio principal: 5-6 series máximo
+- Accesorio: 3 series máximo
+- Déficits particulares: 3 series máximo
+- No permitir accesorio 2 ni accesorio 3
+
+Fuerza resistencia / compensatoria:
+- Isométricos: máximo 2 series
+- Activación: máximo 4 repeticiones
+- 1 ejercicio de cadena anterior
+- 1 ejercicio de cadena posterior
+- 1 ejercicio de aductor
+- PNF
+- Core
+- Cadena anterior/posterior/aductor: máximo 3 series y máximo 8 repeticiones
+- Core: permitir una secuencia de 4 ejercicios
+- Cada 15 días debe poder marcarse un ejercicio con carácter excéntrico
+- Avisar que los ejercicios deben variar durante 4 semanas
+
+3. Biblioteca de ejercicios:
+Usar Ejercicios.pdf para crear un catálogo inicial de ejercicios seleccionables.
+
+Cada ejercicio debe tener:
+- nombre
+- régimen: Con-exc, Con, iso
+- categoría editable
+- tipo de sesión compatible
+- bloque compatible
+- vídeo/enlace opcional
+- observaciones
+- coaching cues
+- campo “activo/inactivo”
+
+4. Menús desplegables:
+En la creación de sesión quiero poder escoger ejercicios desde menús desplegables según el bloque:
+- ejercicio principal
+- accesorio 1
+- accesorio 2
+- accesorio 3
+- cadena anterior
+- cadena posterior
+- aductor
+- PNF
+- core
+- déficits particulares
+
+Importante:
+los ejercicios de core también deben estar dentro de fuerza resistencia / compensatoria.
+
+5. Isométricos y activación:
+No quiero que salgan cerrados desde biblioteca.
+Quiero poder escribirlos manualmente en campos libres.
+Añadir campos:
+- Isométricos personalizados
+- Activación personalizada
+
+6. Vídeos:
+Cada ejercicio debe permitir añadir un enlace de vídeo.
+En la sesión exportada debe aparecer un botón/enlace:
+“Ver vídeo”
+para que el jugador pueda abrirlo si tiene dudas.
+
+7. Recuperación activa:
+Solo permitir estas opciones:
+- Descanso total / no entrenar
+- Bicicleta
+- Movilidad
+- Isométricos
+
+No permitir ejercicios de fuerza, pliometría ni potencia dentro de recuperación activa.
+
+8. Exportación PDF:
+Cada sesión debe poder exportarse en PDF:
+- individual para jugador
+- grupal para equipo
+- versión cuerpo técnico
+
+El PDF debe incluir:
+- nombre de sesión
+- tipo de sesión
+- objetivo
+- ejercicios por bloques
+- series
+- repeticiones
+- descansos
+- observaciones
+- enlaces de vídeo
+- advertencias metodológicas
+- diseño premium PERFORMANCEIQ
+
+9. Asimetrías:
+Actualizar criterios de semáforo:
+- inferior al 7%: verde, bajo riesgo
+- entre 7% y 10%: amarillo, atención
+- superior al 10%: rojo, riesgo elevado
+
+Las asimetrías deben calcularse solo si existen datos reales de pierna derecha e izquierda.
+No inventar asimetrías.
+Usar fórmula:
+diferencia bilateral % = ((valor pierna dominante - valor pierna no dominante) / valor pierna dominante) * 100
+Permitir mostrar valores negativos cuando la pierna no dominante sea superior.
+
+10. Diseño:
+Mantener estética premium.
+No romper funcionalidades existentes.
+Crear validaciones para que no se puedan superar los máximos de volumen por tipo de sesión.
+Mostrar avisos si se excede el volumen recomendado.

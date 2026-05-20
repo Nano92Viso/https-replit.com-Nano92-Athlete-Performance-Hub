@@ -1,0 +1,83 @@
+Quiero afinar el módulo de sesiones y biblioteca de ejercicios.
+
+1. Biblioteca de ejercicios:
+- Elimina todos los ejercicios que no estén en mi PDF/listado original.
+- La app debe ceñirse exclusivamente a los ejercicios que aparecen en Ejercicios.pdf.
+- No inventes ejercicios adicionales.
+- Si un ejercicio no está en el listado original, elimínalo de la biblioteca, menús desplegables, sesiones generadas y datos mock.
+
+2. Recuperación activa:
+En recuperación activa solo pueden aparecer:
+- Descanso total / no entrenar
+- Bicicleta
+- Movilidad
+- Isométricos
+
+3. Isométricos en recuperación activa:
+Cuando seleccione “Isométricos”, quiero poder elegir desde un desplegable:
+- ISO PUSH con altura
+- ISO PUSH sin altura
+
+Añade estos dos ejercicios isométricos al listado permitido de recuperación activa.
+
+4. Campos por ejercicio:
+En cada ejercicio de cualquier sesión añade campos editables para:
+- peso externo / carga externa
+- tiempo de descanso
+- series
+- repeticiones
+- observaciones
+- enlace de vídeo
+
+El peso externo debe poder escribirse como texto libre, por ejemplo:
+- 20 kg
+- 40 kg
+- peso corporal
+- goma media
+- balón medicinal 3 kg
+
+El descanso también debe poder escribirse como texto libre, por ejemplo:
+- 30”
+- 45”
+- 1’
+- 2’
+- 3-5’
+
+5. PDF de sesión:
+Añade un botón visible que diga:
+“Generar PDF de sesión”
+
+Debe aparecer en:
+- pantalla de creación de sesión
+- pantalla de detalle de sesión
+- sesiones individuales
+- sesiones grupales
+
+6. El PDF de sesión debe incluir:
+- nombre de la sesión
+- tipo de sesión
+- jugador/equipo/grupo
+- objetivo principal
+- bloques de la sesión
+- ejercicios seleccionados
+- series
+- repeticiones
+- peso externo
+- tiempo de descanso
+- observaciones
+- enlaces de vídeo
+- recomendaciones metodológicas
+- firma/branding PERFORMANCEIQ
+
+7. Diseño del PDF:
+- formato A4
+- limpio
+- profesional
+- fácil de enviar por WhatsApp o email al jugador
+- versión individual y versión grupal
+
+8. Importante:
+- No rompas lo ya creado.
+- Mantén el diseño premium.
+- No añadas ejercicios nuevos fuera de los indicados.
+- Si algún ejercicio no tiene vídeo, mostrar “Vídeo pendiente”.

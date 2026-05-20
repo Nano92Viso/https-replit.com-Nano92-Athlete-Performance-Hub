@@ -1,0 +1,182 @@
+Quiero modificar la arquitectura de jugadores y sesiones.
+
+1. Clasificación de jugadores
+
+En la pestaña “Jugadores”, quiero que los jugadores estén categorizados en dos grandes bloques:
+
+- Equipos
+- Atletas individuales
+
+Cuando cree un jugador nuevo, debo poder elegir:
+- Tipo de jugador: jugador de equipo / atleta individual
+- Equipo al que pertenece, si es jugador de equipo
+- Categoría
+- Grupo interno si existe
+- Posición
+- Dorsal
+- Foto
+- Observaciones
+
+En la vista de jugadores quiero filtros claros:
+- Todos
+- Equipos
+- Atletas individuales
+- Por equipo
+- Por categoría
+- Por grupo
+- Por posición
+- Por estado físico
+- Por perfil neuromuscular
+
+2. Equipos y categorías
+
+Crear una estructura donde pueda crear:
+- Club / organización
+- Equipo
+- Categoría
+- Temporada
+- Grupos internos dentro del equipo
+
+Ejemplo:
+Equipo: Juvenil A
+Categoría: Juvenil
+Grupos: G1, G2, G3
+
+3. Sesiones individuales
+
+Mantener la creación de sesiones individuales para:
+- atletas externos
+- jugadores concretos de un equipo
+- readaptación individual
+- trabajo específico
+
+Estas sesiones deben permitir:
+- seleccionar un solo jugador
+- seleccionar tipo de sesión
+- seleccionar ejercicios
+- escribir series, repeticiones, carga externa, descansos y observaciones manualmente
+- exportar PDF individual
+
+4. Sesiones grupales / equipo
+
+Crear un módulo específico de “Sesión grupal”.
+
+Debe permitir:
+- seleccionar equipo
+- seleccionar categoría
+- seleccionar fecha
+- seleccionar tipo de sesión
+- seleccionar objetivo
+- seleccionar zona o bloque metodológico
+- crear grupos G1, G2, G3 o los que yo quiera
+- asignar jugadores manualmente a cada grupo
+- mover jugadores entre grupos
+- añadir peso externo individual por jugador
+- añadir métricas por jugador si quiero:
+  - v(m/s)
+  - Vmáx (m/s)
+  - t->vmax (ms)
+  - carga
+  - observaciones
+
+5. Estructura visual de sesión grupal
+
+Quiero que la estructura se parezca al PDF adjunto Fresis33.pdf.
+
+Debe incluir bloques:
+- Fecha
+- Zona / tipo de sesión
+- Volumen
+- Objetivo
+- Organización
+- Activación y pliometría
+- Preventivo
+- PNF
+- Fuerza
+- Core
+- Grupos G1, G2, G3
+- Jugadores dentro de cada grupo
+- Peso externo para entrenamiento
+- Variables opcionales: v(m/s), Vmáx, t->vmax
+
+6. PNF
+
+Cuando toque hacer PNF, debe ir antes de la parte principal.
+
+El orden correcto será:
+- Activación / movilidad
+- Pliometría o técnica de carrera, si aplica
+- Preventivo
+- PNF
+- Parte principal de fuerza
+- Core / compensatorio
+
+Necesito poder añadir tres tipos de PNF como tres ejercicios distintos:
+- PNF isquios
+- PNF aductores
+- PNF abductores
+
+Cada PNF debe tener volumen independiente:
+- series
+- repeticiones
+- tiempo de contracción
+- descanso entre repeticiones
+- descanso entre series
+- observaciones
+- enlace de vídeo opcional
+
+No quiero que los PNF aparezcan como un único bloque genérico. Deben poder editarse como ejercicios separados.
+
+7. Editor de ejercicios en sesión grupal
+
+En cada bloque de la sesión grupal quiero poder añadir ejercicios manualmente.
+
+Cada ejercicio debe tener:
+- nombre
+- grupo asignado, si aplica
+- jugadores asignados, si aplica
+- series
+- repeticiones
+- carga externa
+- tiempo de trabajo
+- tiempo de descanso
+- observaciones
+- link de vídeo
+
+Todos los campos deben ser editables manualmente.
+
+8. Asignación por grupos
+
+Debe existir una interfaz donde pueda:
+- crear G1, G2, G3 o más grupos
+- arrastrar o seleccionar jugadores dentro de cada grupo
+- asignar ejercicios diferentes a cada grupo
+- asignar cargas diferentes por jugador
+- ver claramente qué jugador pertenece a cada grupo
+
+9. PDF de sesión grupal
+
+Añadir botón:
+“Generar PDF sesión grupal”
+
+El PDF debe incluir:
+- encabezado con fecha, equipo, categoría, tipo de sesión y objetivo
+- estructura de bloques
+- ejercicios por bloque
+- PNF separados
+- grupos G1/G2/G3 con jugadores
+- carga externa por jugador
+- series, repeticiones, descansos y observaciones
+- links de vídeo
+- diseño limpio, profesional y similar a una hoja de sesión de preparación física
+
+10. Importante
+
+- No mezclar sesiones individuales con sesiones grupales.
+- Deben existir ambos flujos.
+- No eliminar lo ya creado.
+- Mantener diseño premium PERFORMANCEIQ.
+- No inventar ejercicios nuevos.
+- Usar únicamente la biblioteca permitida y los ejercicios que yo añada.
+- PNF debe ir antes de la parte principal.
+- Las sesiones grupales deben estar pensadas para equipos completos y grupos internos.

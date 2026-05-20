@@ -1,0 +1,1191 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.4.0
+  description: PerformanceIQ Football Performance SaaS API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: players
+  - name: neuromuscular
+  - name: sessions
+  - name: generator
+  - name: exercises
+  - name: templates
+  - name: dashboard
+  - name: teams
+  - name: injuries
+  - name: player-groups
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /players:
+    get:
+      operationId: listPlayers
+      tags: [players]
+      summary: List all players
+      parameters:
+        - name: position
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: team
+          in: query
+          schema: { type: string }
+        - name: playerType
+          in: query
+          schema: { type: string }
+        - name: teamId
+          in: query
+          schema: { type: integer }
+        - name: groupId
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: List of players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+    post:
+      operationId: createPlayer
+      tags: [players]
+      summary: Create a player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+
+  /players/import-csv:
+    post:
+      operationId: importPlayersCsv
+      tags: [players]
+      summary: Import players and neuromuscular data from Chronojump CSV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CsvImportInput"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CsvImportResult"
+
+  /players/{id}:
+    get:
+      operationId: getPlayer
+      tags: [players]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Player details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePlayer
+      tags: [players]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerUpdate"
+      responses:
+        "200":
+          description: Updated player
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+    delete:
+      operationId: deletePlayer
+      tags: [players]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+  /players/{id}/status:
+    patch:
+      operationId: updatePlayerStatus
+      tags: [players]
+      summary: Update player physical status
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerStatusInput"
+      responses:
+        "200":
+          description: Updated player
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        "404":
+          description: Not found
+
+  /players/{id}/injuries:
+    get:
+      operationId: listPlayerInjuries
+      tags: [injuries]
+      summary: List injuries for a player
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+        - name: season
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of injuries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Injury"
+    post:
+      operationId: createInjury
+      tags: [injuries]
+      summary: Register a new injury
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InjuryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Injury"
+        "404":
+          description: Player not found
+
+  /players/{id}/neuromuscular/history:
+    get:
+      operationId: getPlayerNeuromuscularHistory
+      tags: [neuromuscular]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: All neuromuscular tests for a player ordered by date desc
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NeuromuscularProfile"
+
+  /players/{id}/neuromuscular:
+    get:
+      operationId: getPlayerNeuromuscular
+      tags: [neuromuscular]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Neuromuscular profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NeuromuscularProfile"
+        "404":
+          description: Not found
+    post:
+      operationId: upsertPlayerNeuromuscular
+      tags: [neuromuscular]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NeuromuscularInput"
+      responses:
+        "200":
+          description: Saved neuromuscular profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NeuromuscularProfile"
+
+  /players/{id}/alerts:
+    get:
+      operationId: getPlayerAlerts
+      tags: [neuromuscular]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Performance alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerAlert"
+
+  /sessions:
+    get:
+      operationId: listSessions
+      tags: [sessions]
+      parameters:
+        - { name: playerId, in: query, schema: { type: integer } }
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+    post:
+      operationId: createSession
+      tags: [sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionInput"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /sessions/generate:
+    post:
+      operationId: generateSession
+      tags: [generator]
+      summary: Generate a session plan based on player neuromuscular profile and MD type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateSessionInput"
+      responses:
+        "200":
+          description: Generated session plan (preview, not saved)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedSession"
+        "404":
+          description: Player or profile not found
+
+  /sessions/{id}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+    patch:
+      operationId: updateSession
+      tags: [sessions]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionUpdate"
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSession
+      tags: [sessions]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+  /exercises:
+    get:
+      operationId: listExercises
+      tags: [exercises]
+      summary: List exercise library
+      parameters:
+        - { name: section, in: query, schema: { type: string } }
+        - { name: phase, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Exercise library
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExerciseItem"
+
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      summary: List session templates
+      responses:
+        "200":
+          description: Templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Template"
+    post:
+      operationId: createTemplate
+      tags: [templates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateInput"
+      responses:
+        "201":
+          description: Created template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+
+  /templates/{id}:
+    delete:
+      operationId: deleteTemplate
+      tags: [templates]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/alerts:
+    get:
+      operationId: getDashboardAlerts
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Alerts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerformanceAlert"
+
+  /teams:
+    get:
+      operationId: listTeams
+      tags: [teams]
+      summary: List all teams with nested subteams
+      responses:
+        "200":
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamWithSubteams"
+    post:
+      operationId: createTeam
+      tags: [teams]
+      summary: Create a team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+
+  /teams/{id}:
+    patch:
+      operationId: updateTeam
+      tags: [teams]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+    delete:
+      operationId: deleteTeam
+      tags: [teams]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+  /teams/{id}/subteams:
+    get:
+      operationId: listTeamSubteams
+      tags: [teams]
+      summary: List subteams for a team
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: List of subteams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subteam"
+    post:
+      operationId: createSubteam
+      tags: [teams]
+      summary: Create a subteam
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubteamInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subteam"
+        "404":
+          description: Team not found
+
+  /subteams/{id}:
+    delete:
+      operationId: deleteSubteam
+      tags: [teams]
+      summary: Delete a subteam
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /injuries/{id}:
+    patch:
+      operationId: updateInjury
+      tags: [injuries]
+      summary: Update an injury record
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InjuryUpdate"
+      responses:
+        "200":
+          description: Updated injury
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Injury"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteInjury
+      tags: [injuries]
+      summary: Delete an injury record
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /player-groups:
+    get:
+      operationId: listPlayerGroups
+      tags: [player-groups]
+      summary: List player groups
+      parameters:
+        - name: teamId
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerGroup"
+    post:
+      operationId: createPlayerGroup
+      tags: [player-groups]
+      summary: Create a player group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerGroupInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerGroup"
+
+  /player-groups/{id}:
+    delete:
+      operationId: deletePlayerGroup
+      tags: [player-groups]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status: { type: string }
+      required: [status]
+
+    InjuryRecord:
+      type: object
+      required: [date, type, description, daysOut]
+      properties:
+        date: { type: string }
+        type: { type: string }
+        description: { type: string }
+        daysOut: { type: integer }
+        recovered: { type: boolean }
+
+    Player:
+      type: object
+      required: [id, name, position, number, age, injuryStatus, riskLevel, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        position: { type: string }
+        number: { type: integer }
+        age: { type: integer }
+        team: { type: ["string", "null"] }
+        height: { type: ["number", "null"] }
+        weight: { type: ["number", "null"] }
+        dominantFoot: { type: ["string", "null"] }
+        nationality: { type: ["string", "null"] }
+        injuryStatus:
+          type: string
+          enum: [fit, minor_risk, injured, recovery]
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        injuryHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/InjuryRecord"
+        lastTestDate: { type: ["string", "null"] }
+        createdAt: { type: string }
+        playerType: { type: string }
+        teamId: { type: ["integer", "null"] }
+        subteamId: { type: ["integer", "null"] }
+        groupId: { type: ["integer", "null"] }
+        category: { type: ["string", "null"] }
+        photoUrl: { type: ["string", "null"] }
+        observations: { type: ["string", "null"] }
+        physicalStatus: { type: ["string", "null"] }
+        birthDate: { type: ["string", "null"] }
+        birthPlace: { type: ["string", "null"] }
+        preferredFoot: { type: ["string", "null"] }
+        contractEnd: { type: ["string", "null"] }
+
+    PlayerInput:
+      type: object
+      required: [name, position, number, age]
+      properties:
+        name: { type: string }
+        position: { type: string }
+        number: { type: integer }
+        age: { type: integer }
+        team: { type: string }
+        height: { type: number }
+        weight: { type: number }
+        dominantFoot: { type: string }
+        nationality: { type: string }
+        injuryStatus:
+          type: string
+          enum: [fit, minor_risk, injured, recovery]
+        playerType: { type: string }
+        teamId: { type: integer }
+        subteamId: { type: integer }
+        groupId: { type: integer }
+        category: { type: string }
+        photoUrl: { type: string }
+        observations: { type: string }
+        physicalStatus:
+          type: string
+          enum: [available, injured, doubt, sanctioned, recovery]
+        birthDate: { type: string }
+        birthPlace: { type: string }
+        preferredFoot:
+          type: string
+          enum: [left, right, both]
+        contractEnd: { type: string }
+
+    PlayerUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        position: { type: string }
+        number: { type: integer }
+        age: { type: integer }
+        team: { type: string }
+        height: { type: number }
+        weight: { type: number }
+        dominantFoot: { type: string }
+        nationality: { type: string }
+        injuryStatus:
+          type: string
+          enum: [fit, minor_risk, injured, recovery]
+        playerType: { type: string }
+        teamId: { type: integer }
+        subteamId: { type: integer }
+        groupId: { type: integer }
+        category: { type: string }
+        photoUrl: { type: string }
+        observations: { type: string }
+        physicalStatus:
+          type: string
+          enum: [available, injured, doubt, sanctioned, recovery]
+        birthDate: { type: string }
+        birthPlace: { type: string }
+        preferredFoot:
+          type: string
+          enum: [left, right, both]
+        contractEnd: { type: string }
+
+    PlayerStatusInput:
+      type: object
+      required: [physicalStatus]
+      properties:
+        physicalStatus:
+          type: string
+          enum: [available, injured, doubt, sanctioned, recovery]
+
+    NeuromuscularProfile:
+      type: object
+      required: [id, playerId, load, explode, drive, interpretation, testDate]
+      properties:
+        id: { type: integer }
+        playerId: { type: integer }
+        load: { type: number }
+        explode: { type: number }
+        drive: { type: number }
+        cmjHeight: { type: ["number", "null"] }
+        squatJump: { type: ["number", "null"] }
+        isometricForce: { type: ["number", "null"] }
+        forcePerKg: { type: ["number", "null"] }
+        power: { type: ["number", "null"] }
+        powerPerKg: { type: ["number", "null"] }
+        maxSpeed: { type: ["number", "null"] }
+        tToVmax: { type: ["number", "null"] }
+        asymmetryIndex: { type: ["number", "null"] }
+        rsi: { type: ["number", "null"] }
+        interpretation: { type: string }
+        profileType: { type: ["string", "null"] }
+        testDate: { type: string }
+
+    NeuromuscularInput:
+      type: object
+      required: [load, explode, drive, testDate]
+      properties:
+        load: { type: number }
+        explode: { type: number }
+        drive: { type: number }
+        cmjHeight: { type: number }
+        squatJump: { type: number }
+        isometricForce: { type: number }
+        forcePerKg: { type: number }
+        power: { type: number }
+        powerPerKg: { type: number }
+        maxSpeed: { type: number }
+        tToVmax: { type: number }
+        asymmetryIndex: { type: number }
+        rsi: { type: number }
+        testDate: { type: string }
+
+    PlayerAlert:
+      type: object
+      required: [id, type, metric, value, threshold, message, severity, recommendation]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        metric: { type: string }
+        value: { type: ["number", "null"] }
+        threshold: { type: number }
+        message: { type: string }
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        recommendation: { type: string }
+
+    GeneratedExercise:
+      type: object
+      required: [id, name, section, phase, vector, contractionType, sets, rest, coachingCues, physiologicalObjective, transfer, equipment, intensityLevel]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        section: { type: string }
+        phase: { type: string }
+        vector: { type: string }
+        contractionType: { type: string }
+        sets: { type: integer }
+        reps: { type: ["integer", "null"] }
+        duration: { type: ["integer", "null"] }
+        rest: { type: integer }
+        intensityLevel: { type: string }
+        coachingCues:
+          type: array
+          items: { type: string }
+        physiologicalObjective: { type: string }
+        transfer: { type: string }
+        equipment: { type: string }
+
+    SessionSection:
+      type: object
+      required: [name, label, duration, exercises]
+      properties:
+        name: { type: string }
+        label: { type: string }
+        duration: { type: integer }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+
+    GeneratedSession:
+      type: object
+      required: [title, sessionType, mdType, duration, intensity, generatedFor, rationale, warnings, sections]
+      properties:
+        title: { type: string }
+        sessionType: { type: string }
+        mdType: { type: string }
+        duration: { type: integer }
+        intensity: { type: string }
+        generatedFor: { type: integer }
+        rationale: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionSection"
+
+    GenerateSessionInput:
+      type: object
+      required: [playerId, mdType]
+      properties:
+        playerId: { type: integer }
+        mdType:
+          type: string
+          enum: ["MD-5", "MD-4", "MD-3", "MD-2", "readaptation", "preventive"]
+
+    Session:
+      type: object
+      required: [id, title, sessionType, date, duration, intensity, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        sessionType: { type: string }
+        mdType: { type: ["string", "null"] }
+        date: { type: string }
+        duration: { type: integer }
+        intensity: { type: string }
+        generatedFor: { type: ["integer", "null"] }
+        playerIds:
+          type: array
+          items: { type: integer }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+        rationale: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    SessionUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        sessionType:
+          type: string
+          enum: [strength, speed, endurance, technical, recovery, match]
+        mdType: { type: string }
+        date: { type: string }
+        duration: { type: integer }
+        intensity:
+          type: string
+          enum: [low, medium, high, max]
+        playerIds:
+          type: array
+          items: { type: integer }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+        rationale: { type: string }
+        notes: { type: string }
+
+    SessionInput:
+      type: object
+      required: [title, sessionType, date, duration, intensity]
+      properties:
+        title: { type: string }
+        sessionType:
+          type: string
+          enum: [strength, speed, endurance, technical, recovery, match]
+        mdType: { type: string }
+        date: { type: string }
+        duration: { type: integer }
+        intensity:
+          type: string
+          enum: [low, medium, high, max]
+        generatedFor: { type: integer }
+        playerIds:
+          type: array
+          items: { type: integer }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+        rationale: { type: string }
+        notes: { type: string }
+
+    ExerciseItem:
+      type: object
+      required: [id, name, section, phase, vector, contractionType, neuromuscularLoad, fatigueGenerated, transfer, defaultSets, defaultRest, intensityLevel, coachingCues, physiologicalObjective, equipment]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        section: { type: string }
+        phase: { type: string }
+        vector: { type: string }
+        contractionType: { type: string }
+        neuromuscularLoad: { type: integer }
+        fatigueGenerated: { type: string }
+        transfer: { type: string }
+        defaultSets: { type: integer }
+        defaultReps: { type: ["integer", "null"] }
+        defaultDuration: { type: ["integer", "null"] }
+        defaultRest: { type: integer }
+        intensityLevel: { type: string }
+        coachingCues:
+          type: array
+          items: { type: string }
+        physiologicalObjective: { type: string }
+        equipment: { type: string }
+        safeForInjury: { type: boolean }
+
+    Template:
+      type: object
+      required: [id, name, sessionType, duration, intensity, exercises, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        mdType: { type: ["string", "null"] }
+        sessionType: { type: string }
+        duration: { type: integer }
+        intensity: { type: string }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+        createdAt: { type: string }
+
+    TemplateInput:
+      type: object
+      required: [name, sessionType, duration, intensity, exercises]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        mdType: { type: string }
+        sessionType: { type: string }
+        duration: { type: integer }
+        intensity: { type: string }
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedExercise"
+
+    DashboardStats:
+      type: object
+      required: [totalPlayers, fitPlayers, injuredPlayers, highRiskPlayers, sessionsThisWeek, avgLoadScore, avgExplodeScore, avgDriveScore]
+      properties:
+        totalPlayers: { type: integer }
+        fitPlayers: { type: integer }
+        injuredPlayers: { type: integer }
+        highRiskPlayers: { type: integer }
+        sessionsThisWeek: { type: integer }
+        avgLoadScore: { type: number }
+        avgExplodeScore: { type: number }
+        avgDriveScore: { type: number }
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+
+    ActivityItem:
+      type: object
+      required: [id, type, description, timestamp]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        description: { type: string }
+        timestamp: { type: string }
+
+    PerformanceAlert:
+      type: object
+      required: [id, playerId, playerName, alertType, message, severity, createdAt]
+      properties:
+        id: { type: integer }
+        playerId: { type: integer }
+        playerName: { type: string }
+        alertType: { type: string }
+        message: { type: string }
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        createdAt: { type: string }
+
+    CsvImportInput:
+      type: object
+      required: [csvContent]
+      properties:
+        csvContent: { type: string }
+        delimiter: { type: string }
+
+    CsvImportResult:
+      type: object
+      required: [imported, errors, mappedColumns]
+      properties:
+        imported: { type: integer }
+        updated: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+        mappedColumns:
+          type: array
+          items: { type: string }
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+
+    Team:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        clubName: { type: ["string", "null"] }
+        category: { type: ["string", "null"] }
+        season: { type: ["string", "null"] }
+        parentTeamId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+
+    TeamWithSubteams:
+      type: object
+      required: [id, name, createdAt, subteams]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        clubName: { type: ["string", "null"] }
+        category: { type: ["string", "null"] }
+        season: { type: ["string", "null"] }
+        parentTeamId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        subteams:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subteam"
+
+    TeamInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        clubName: { type: string }
+        category: { type: string }
+        season: { type: string }
+        parentTeamId: { type: integer }
+
+    Subteam:
+      type: object
+      required: [id, teamId, name, createdAt]
+      properties:
+        id: { type: integer }
+        teamId: { type: integer }
+        name: { type: string }
+        createdAt: { type: string }
+
+    SubteamInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+
+    Injury:
+      type: object
+      required: [id, playerId, season, bodyZone, injuryType, startDate, createdAt]
+      properties:
+        id: { type: integer }
+        playerId: { type: integer }
+        season: { type: string }
+        bodyZone: { type: string }
+        injuryType: { type: string }
+        startDate: { type: string }
+        endDate: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    InjuryInput:
+      type: object
+      required: [season, bodyZone, injuryType, startDate]
+      properties:
+        season: { type: string }
+        bodyZone: { type: string }
+        injuryType: { type: string }
+        startDate: { type: string }
+        endDate: { type: string }
+        notes: { type: string }
+
+    InjuryUpdate:
+      type: object
+      properties:
+        season: { type: string }
+        bodyZone: { type: string }
+        injuryType: { type: string }
+        startDate: { type: string }
+        endDate: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+
+    PlayerGroup:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id: { type: integer }
+        teamId: { type: ["integer", "null"] }
+        name: { type: string }
+        createdAt: { type: string }
+
+    PlayerGroupInput:
+      type: object
+      required: [name]
+      properties:
+        teamId: { type: integer }
+        name: { type: string }

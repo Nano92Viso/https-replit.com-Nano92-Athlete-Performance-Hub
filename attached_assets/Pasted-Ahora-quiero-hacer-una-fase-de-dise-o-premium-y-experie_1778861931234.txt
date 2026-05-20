@@ -1,0 +1,77 @@
+Ahora quiero hacer una fase de diseño premium y experiencia visual impactante.
+
+Objetivo:
+que la app parezca una plataforma profesional de alto rendimiento tipo VALD, Catapult, Kitman Labs, Smartabase, Hudl y Apple Fitness, pero con identidad propia: PERFORMANCEIQ.
+
+Quiero mejorar toda la experiencia visual sin romper la funcionalidad existente.
+
+Trabaja en:
+
+1. Rediseño global premium:
+- dark mode más elegante
+- mejor jerarquía visual
+- tarjetas más limpias
+- microinteracciones
+- animaciones suaves
+- iconografía profesional
+- bordes, sombras y spacing más refinados
+- sensación de software deportivo elite
+
+2. Dashboard impactante:
+- hero superior con resumen del equipo
+- KPIs principales más visuales
+- alertas destacadas
+- carga semanal
+- perfil neuromuscular medio
+- jugadores en riesgo
+- evolución reciente
+- acceso rápido a jugadores, sesiones, informes y planner
+
+3. Página individual de jugador:
+- cabecera tipo ficha profesional
+- foto grande del jugador
+- estado físico visual
+- perfil Load / Explode / Drive con radar premium
+- métricas principales
+- alertas
+- recomendaciones metodológicas
+- botón destacado de generar informe PDF
+- historial de tests
+- evolución temporal
+
+4. Módulo de informes:
+- crear preview visual del informe antes de exportar
+- diseño tipo informe profesional A4
+- portada del jugador
+- datos personales
+- radar
+- KPIs
+- perfil neuromuscular
+- recomendaciones
+- exportación PDF
+
+5. Navegación:
+- sidebar más profesional
+- secciones claras:
+  Dashboard
+  Jugadores
+  Sesiones
+  Planner
+  Informes
+  Biblioteca
+  Configuración
+
+6. Branding:
+- mantener nombre PERFORMANCEIQ
+- usar estética deportiva premium
+- añadir sensación de plataforma SaaS seria
+- que cada pantalla parezca lista para enseñar a un club
+
+7. Importante:
+- no elimines funcionalidades existentes
+- no rompas rutas actuales
+- conserva datos mock y base de datos
+- mejora diseño, usabilidad y experiencia
+- si necesitas crear componentes reutilizables, hazlo
+
+Quiero que el resultado visual sea impactante, moderno, profesional y vendible.

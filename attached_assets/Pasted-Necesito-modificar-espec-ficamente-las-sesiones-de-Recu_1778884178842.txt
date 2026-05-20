@@ -1,0 +1,73 @@
+Necesito modificar específicamente las sesiones de Recuperación Activa.
+
+Ahora mismo el apartado de isométricos y movilidad es demasiado cerrado.
+
+Quiero que en Recuperación Activa existan estos bloques:
+
+1. Descanso total / no entrenar
+2. Bicicleta
+3. Movilidad
+4. Isométricos
+
+Modificación importante:
+
+En el bloque de ISOMÉTRICOS:
+- Quiero un listado dinámico de ejercicios.
+- Debe haber botón “Añadir ejercicio isométrico”.
+- Puedo añadir tantos ejercicios como quiera.
+- Cada ejercicio añadido debe tener un desplegable/listado de selección.
+- En ese listado deben aparecer, como mínimo:
+  - ISO PUSH con altura
+  - ISO PUSH sin altura
+- Debe permitirme añadir más ejercicios isométricos en el futuro.
+
+Cada ejercicio isométrico debe tener campos manuales:
+- Series
+- Repeticiones
+- Tiempo de trabajo / duración
+- Tiempo de descanso
+- Peso externo / carga externa
+- Observaciones
+- Link de vídeo
+
+Todos los campos deben ser editables libremente.
+
+En el bloque de MOVILIDAD:
+- Quiero un listado dinámico de ejercicios.
+- Debe haber botón “Añadir ejercicio de movilidad”.
+- Puedo añadir tantos ejercicios como quiera.
+- Cada ejercicio de movilidad debe poder escribirse o seleccionarse.
+- Debe permitirme crear ejercicios nuevos manualmente.
+
+Cada ejercicio de movilidad debe tener campos manuales:
+- Series
+- Repeticiones
+- Tiempo de trabajo / duración
+- Tiempo de descanso
+- Peso externo / carga externa
+- Observaciones
+- Link de vídeo
+
+Importante:
+- No limitar el número de ejercicios.
+- No cerrar los descansos a opciones fijas.
+- El descanso debe ser texto libre.
+- La carga externa debe ser texto libre.
+- Las series y repeticiones deben ser editables.
+- Estos campos deben guardarse correctamente.
+- Estos campos deben aparecer también en el PDF de sesión.
+
+El PDF de recuperación activa debe mostrar:
+- bloque de bicicleta si existe
+- bloque de movilidad con todos sus ejercicios
+- bloque de isométricos con todos sus ejercicios
+- series
+- repeticiones
+- duración
+- carga externa
+- descanso
+- observaciones
+- link de vídeo
+
+No rompas el resto de tipos de sesiones.
+Mantén el diseño premium PERFORMANCEIQ.

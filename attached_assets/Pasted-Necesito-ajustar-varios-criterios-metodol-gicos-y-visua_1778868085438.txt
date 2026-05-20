@@ -1,0 +1,109 @@
+Necesito ajustar varios criterios metodológicos y visuales de la app.
+
+1. Cambiar textos generales:
+- Donde ponga “Rendimiento del plantel”, cambiarlo por “Análisis del equipo”.
+- Mantener lenguaje profesional, cercano y de preparación física.
+
+2. Perfil neuromuscular:
+- El gráfico debe llamarse “Perfil neuromuscular”, no “Radar neuromuscular”.
+- Los valores óptimos de Load, Explode y Drive deben estar entre 42 y 52.
+- Si un valor está por debajo o por encima de ese rango, debe marcarse como desviación del perfil óptimo.
+- El objetivo no es llegar siempre a 100, sino estar dentro del rango óptimo 42–52.
+- Ajustar barras, colores, interpretación y alertas según este criterio.
+- Añadir explicación automática: perfil equilibrado si Load, Explode y Drive están dentro de 42–52.
+
+3. Imagen del jugador:
+- En la ficha individual y en los informes, no quiero que el icono principal sea solo el dorsal.
+- Debe aparecer la imagen/foto del jugador.
+- Añadir un círculo pequeño abajo a la derecha con el dorsal.
+- Si no hay foto, mostrar placeholder elegante con iniciales y dorsal.
+
+4. Chronojump:
+- Añadir opción para subir imagen del perfil neuromuscular de Chronojump.
+- Esta imagen debe poder aparecer en:
+  - ficha del jugador
+  - comparador de tests
+  - informe PDF
+- Añadir bloque llamado “Imagen Chronojump / Perfil original”.
+- Si no hay imagen subida, mostrar placeholder premium.
+
+5. Asimetrías:
+- No calcular asimetrías inventadas si no existen datos reales.
+- Mostrar un aviso: “Asimetría pendiente de datos Chronojump unilateral”.
+- Dejar preparado el sistema para calcular asimetrías cuando se importen datos de pierna derecha e izquierda.
+- Las asimetrías deben venir de datos Chronojump, no de estimaciones visuales.
+
+6. Sesiones:
+Cambiar la lógica de tipo de sesión.
+
+Eliminar selección principal basada en MD-1, MD-2, MD-3, etc.
+
+Ahora el tipo de sesión debe poder seleccionarse como:
+- Fuerza explosiva
+- Fuerza potencia
+- Fuerza resistencia
+- Recuperación activa
+
+7. Recuperación activa:
+En recuperación activa solo pueden aparecer estas opciones:
+- Descanso total / no entrenar
+- Bicicleta
+- Movilidad
+- Isométricos
+
+No añadir otros ejercicios en recuperación activa.
+
+8. Creación de sesiones:
+Quiero que el preparador pueda seleccionar manualmente:
+- ejercicios
+- series
+- repeticiones
+- tiempo de trabajo
+- tiempo de descanso
+- bloques de la sesión
+- observaciones
+- objetivo de la sesión
+- jugador individual o grupo/equipo
+
+Mantener la estructura actual de sesión, pero hacerla editable.
+
+9. Biblioteca de ejercicios:
+Dejar preparada una biblioteca editable de ejercicios.
+Por ahora no rellenar con ejercicios inventados.
+Crear estructura para que yo añada después mi listado específico.
+
+Cada ejercicio debe tener:
+- nombre
+- tipo de sesión compatible
+- bloque
+- objetivo
+- Load / Explode / Drive
+- vector
+- series sugeridas
+- repeticiones sugeridas
+- descanso sugerido
+- descripción
+- coaching cues
+- imagen/video opcional
+
+10. Exportación de sesiones:
+Además de guardar la sesión, quiero exportarla a PDF.
+Debe poder generarse:
+- PDF individual para enviar a un jugador
+- PDF grupal para enviar a un equipo
+- PDF de sesión completa para cuerpo técnico
+
+11. Informes:
+Actualizar los informes para que respeten:
+- “Perfil neuromuscular”
+- rango óptimo 42–52
+- foto del jugador + dorsal
+- imagen Chronojump opcional
+- asimetrías solo si hay datos reales
+- exportación PDF limpia y profesional
+
+Importante:
+No rompas la funcionalidad existente.
+Mantén el diseño premium PERFORMANCEIQ.
+No inventes ejercicios ni datos metodológicos que todavía no te he dado.
+Deja campos preparados para que yo añada después ejercicios, volúmenes y reglas específicas.

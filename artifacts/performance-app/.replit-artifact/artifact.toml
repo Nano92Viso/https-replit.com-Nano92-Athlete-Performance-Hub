@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Football Performance SaaS"
+version = "1.0.0"
+id = "artifacts/performance-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18276
+
+[services.development]
+run = "pnpm --filter @workspace/performance-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/performance-app", "run", "build" ]
+publicDir = "artifacts/performance-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18276"
+BASE_PATH = "/"

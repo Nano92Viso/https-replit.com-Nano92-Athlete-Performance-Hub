@@ -1,0 +1,97 @@
+Quiero mejorar el módulo de informes PDF usando como referencia el Excel que voy a adjuntar: Datos_Test.xlsx.
+
+Objetivo:
+crear informes individuales de jugador similares al Excel, pero con diseño mucho más premium y moderno.
+
+El informe debe incluir:
+
+1. Portada/ficha superior:
+- foto del jugador
+- nombre
+- posición
+- equipo/categoría
+- fecha del test
+- estado físico
+- perfil neuromuscular dominante
+
+2. Tabla comparativa de tests:
+Usar las variables del Excel:
+- v(m/s)
+- vmax(m/s)
+- t->vmax(ms)
+- p(W)
+- PotmedRel / Prela
+- pmax(W)
+- PmaxRel / PmaxRela
+- Fmax(N)
+- FmaxRel / FmaxRela
+- RFD(N/s)
+
+Debe permitir comparar varias fechas/test del mismo jugador.
+
+3. Sistema de puntuación:
+- valor real
+- puntuación ideal
+- puntuación del jugador
+- mejora porcentual entre tests
+- colores por nivel: óptimo, mejorable, déficit
+
+4. Gráfico radar:
+Crear un radar como el del Excel:
+- comparar test anterior vs test actual
+- añadir línea de puntuación ideal
+- mostrar visualmente déficits y mejoras
+
+5. Perfil neuromuscular:
+Añadir imagen/sección visual con:
+- Load
+- Explode
+- Drive
+- barras comparativas
+- perfil dominante
+- interpretación automática
+
+6. Curvas del encoder:
+Añadir espacio para curvas fuerza-tiempo si existen datos/imágenes.
+Si no existen, mostrar placeholder premium preparado para futuras curvas.
+
+7. Análisis unilateral / disbalances:
+Usar la lógica de la hoja Disbalances y Datos_unilaterales:
+- pierna derecha
+- pierna izquierda
+- diferencia bilateral %
+- alertas si hay asimetría elevada
+
+8. Interpretación automática:
+Generar texto técnico pero entendible:
+- qué ha mejorado
+- qué ha empeorado
+- qué déficit presenta
+- qué significa en rendimiento
+- recomendación metodológica
+
+9. Recomendaciones:
+Añadir recomendaciones por perfil:
+- si déficit Load: fuerza máxima, isométricos, cargas altas controladas
+- si déficit Explode: potencia, contrastes, balísticos, saltos con intención
+- si déficit Drive: pliometría reactiva, stiffness, aceleración, tiempos de contacto
+- si asimetría alta: trabajo unilateral preventivo
+
+10. Exportación PDF:
+Añadir botón “Generar informe PDF” desde la ficha del jugador.
+El PDF debe ser formato A4, profesional, limpio, con estética PERFORMANCEIQ.
+
+Importante:
+- No rompas funcionalidades existentes.
+- Mantén el diseño premium actual.
+- Usa los nombres de hojas y variables del Excel como referencia:
+  Informe indv
+  Informe colectivo
+  Disbalances
+  Datos_bruto
+  Datos_brutos_senior
+  Datos_brutos_JA
+  Datos_unilaterales
+  Datos_Posiciones
+
+Quiero que la app pueda replicar y mejorar este informe de Excel dentro de la plataforma.
