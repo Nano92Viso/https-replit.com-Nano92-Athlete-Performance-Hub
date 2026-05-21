@@ -803,6 +803,7 @@ export const CreateTeamBody = zod.object({
   category: zod.string().optional(),
   season: zod.string().optional(),
   parentTeamId: zod.number().optional(),
+  club: zod.string().optional(),
 });
 
 export const UpdateTeamParams = zod.object({
@@ -815,6 +816,7 @@ export const UpdateTeamBody = zod.object({
   category: zod.string().optional(),
   season: zod.string().optional(),
   parentTeamId: zod.number().optional(),
+  club: zod.string().optional(),
 });
 
 export const UpdateTeamResponse = zod.object({
@@ -824,6 +826,7 @@ export const UpdateTeamResponse = zod.object({
   category: zod.string().nullish(),
   season: zod.string().nullish(),
   parentTeamId: zod.number().nullish(),
+  club: zod.string().nullish(),
   createdAt: zod.string(),
 });
 

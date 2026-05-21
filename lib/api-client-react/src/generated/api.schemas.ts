@@ -519,6 +519,8 @@ export interface Team {
   season?: string | null;
   /** @nullable */
   parentTeamId?: number | null;
+  /** @nullable */
+  club?: string | null;
   createdAt: string;
 }
 
@@ -592,6 +594,7 @@ export interface TeamInput {
   category?: string;
   season?: string;
   parentTeamId?: number;
+  club?: string;
 }
 
 export interface PlayerGroup {

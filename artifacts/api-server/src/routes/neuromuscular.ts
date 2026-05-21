@@ -30,7 +30,7 @@ export function computeProfile(load: number, explode: number, drive: number): { 
     };
   } else if (load === max) {
     return {
-      profileType: "Strength Profile",
+      profileType: "Perfil Neuromuscular",
       interpretation: "Perfil de fuerza y resistencia muscular predominante. Alta capacidad de carga y durabilidad ante el esfuerzo repetido. Ideal para posiciones con alto volumen de duelos físicos. Trabajar reactividad y velocidad gestual.",
     };
   } else {

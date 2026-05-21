@@ -66,8 +66,8 @@ function getRecommendations(profile: string, load: number, explode: number, driv
     recs.push("MD-1: Activación neuromuscular breve (≤20 min). Drive óptimo — mini-hurdles, skipping y drops a mínimo volumen. No generar fatiga residual pre-partido.");
   if (asymm > 15)
     recs.push("⚠ Asimetría bilateral elevada (>" + asymm.toFixed(0) + "%). Priorizar trabajo unilateral compensatorio: zancada búlgara, prensa unilateral y hop test. Objetivo: reducir diferencia a <10% en 4 semanas.");
-  if (profile === "Strength Profile")
-    recs.push("Perfil Fuerza: mejorar velocidad y potencia explosiva. Incorporar 2 sesiones/semana de velocidad máxima y pliometría de alta intensidad durante 8 semanas. Reducir volumen de fuerza máxima en fase de desarrollo.");
+  if (profile === "Perfil Neuromuscular")
+    recs.push("Perfil Neuromuscular: mejorar velocidad y potencia explosiva. Incorporar 2 sesiones/semana de velocidad máxima y pliometría de alta intensidad durante 8 semanas. Reducir volumen de fuerza máxima en fase de desarrollo.");
   if (profile === "Power Profile")
     recs.push("Perfil Potencia: mejorar Drive para completar el triángulo LED. Ejercicios de transmisión específica: Trap Bar deadlift jump, step-up explosivo y bounding con bastón.");
   recs.push("Recuperación activa post-esfuerzo: 24-36h post-partido — foam roller (15 min) + movilidad articular + hidroterapia o natación suave (20 min). Monitorizar HRV y calidad de sueño.");
@@ -116,7 +116,7 @@ const typeLabel:   Record<string,string> = { strength:"Fuerza", speed:"Velocidad
 const typeColor:   Record<string,string> = { strength:"#f97316", speed:"#3b82f6", endurance:"#10b981", technical:"#a855f7", recovery:"#06b6d4", match:"#ef4444" };
 const profileColors: Record<string,{ bg:string; border:string; text:string }> = {
   "Power Profile":    { bg:"#1e3a5f", border:"#3b82f6", text:"#60a5fa" },
-  "Strength Profile": { bg:"#3d1f0e", border:"#f97316", text:"#fb923c" },
+  "Perfil Neuromuscular": { bg:"#3d1f0e", border:"#f97316", text:"#fb923c" },
   "Force Profile":    { bg:"#2e1852", border:"#a855f7", text:"#c084fc" },
   "Balanced Profile": { bg:"#0f2d1e", border:"#10b981", text:"#34d399" },
 };

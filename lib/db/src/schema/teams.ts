@@ -10,6 +10,7 @@ export const teamsTable = pgTable("teams", {
   category: text("category"),
   season: text("season"),
   parentTeamId: integer("parent_team_id").references((): AnyPgColumn => teamsTable.id, { onDelete: "set null" }),
+  club: text("club"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

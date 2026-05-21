@@ -79,27 +79,23 @@ const playerSchema = z.object({
   weight: z.coerce.number().optional(),
   dominantFoot: z.string().optional(),
   nationality: z.string().optional(),
-  injuryStatus: z.enum(["fit", "minor_risk", "injured", "recovery"]).optional(),
   playerType: z.enum(["team", "individual"]).default("team"),
   teamId: z.coerce.number().int().optional(),
   subteamId: z.coerce.number().int().optional(),
   category: z.string().optional(),
+  team: z.string().optional(),
   observations: z.string().optional(),
-  // Nuevos campos
   physicalStatus: z.enum(["available", "injured", "doubt", "sanctioned", "recovery"]).optional(),
   birthDate: z.string().optional(),
   birthPlace: z.string().optional(),
   preferredFoot: z.enum(["left", "right", "both"]).optional(),
-  contractEnd: z.string().optional(),
 });
 type PlayerForm = z.infer<typeof playerSchema>;
 
 const teamSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  clubName: z.string().optional(),
-  category: z.string().optional(),
+  club: z.string().min(1, "Club requerido"),
+  category: z.string().min(1, "Categoría requerida"),
   season: z.string().optional(),
-  parentTeamId: z.coerce.number().int().optional(),
 });
 type TeamForm = z.infer<typeof teamSchema>;
 
@@ -187,8 +183,9 @@ export default function Players() {
   const [showCsv, setShowCsv] = useState(false);
   const [csvContent, setCsvContent] = useState("");
   const [playerTypeFilter, setPlayerTypeFilter] = useState<PlayerTypeFilter>("all");
-  const [expandedTeams, setExpandedTeams] = useState<Set<number | "unassigned">>(new Set());
+  const [expandedTeams, setExpandedTeams] = useState<Set<number | string>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [selectedClubFilter, setSelectedClubFilter] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -205,21 +202,36 @@ export default function Players() {
   // ── Player form ──────────────────────────────────────────────────────────────
   const playerForm = useForm<PlayerForm>({
     resolver: zodResolver(playerSchema),
-    defaultValues: { name: "", position: "", number: 1, age: 22, injuryStatus: "fit", playerType: "team" },
+    defaultValues: { name: "", position: "", number: 1, age: 22, playerType: "team" },
   });
   const watchedPlayerType = playerForm.watch("playerType");
   const watchedTeamId     = playerForm.watch("teamId");
+  const watchedHeight     = playerForm.watch("height");
+  const watchedWeight     = playerForm.watch("weight");
 
-  // Equipos raíz: sólo los que NO tienen parentTeamId
-  const rootTeams = teams.filter(t => t.parentTeamId == null);
+  // IMC calculation
+  const imc = watchedHeight && watchedWeight && watchedHeight > 0
+    ? watchedWeight / Math.pow(watchedHeight / 100, 2)
+    : null;
+  const imcLabel = imc === null ? null
+    : imc < 18.5  ? { text: "Bajo peso",  color: "text-yellow-400" }
+    : imc < 25    ? { text: "Normopeso",  color: "text-emerald-400" }
+    : imc < 30    ? { text: "Sobrepeso",  color: "text-orange-400" }
+    :               { text: "Obesidad",   color: "text-red-400" };
 
-  // CATEGORÍA: subteams del equipo raíz seleccionado (de subteamsTable, anidados en team.subteams)
-  const availableSubteams = teams.find(t => t.id === watchedTeamId)?.subteams ?? [];
+  // Unique clubs from teams
+  const uniqueClubs = [...new Set(teams.map(t => t.club).filter(Boolean))] as string[];
+  // Teams filtered by selected club (for player form)
+  const teamsForClub = selectedClubFilter
+    ? teams.filter(t => t.club === selectedClubFilter)
+    : [];
+  // Season of currently selected team
+  const selectedTeamData = teams.find(t => t.id === watchedTeamId);
 
   // ── Team form ────────────────────────────────────────────────────────────────
   const teamForm = useForm<TeamForm>({
     resolver: zodResolver(teamSchema),
-    defaultValues: { name: "", clubName: "", category: "", season: "" },
+    defaultValues: { club: "", category: "", season: "2025/26" },
   });
 
   // ── Group players by teamId ──────────────────────────────────────────────────
@@ -233,7 +245,7 @@ export default function Players() {
     return map;
   }, [players]);
 
-  function toggleTeam(id: number | "unassigned") {
+  function toggleTeam(id: number | string) {
     setExpandedTeams(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -254,7 +266,7 @@ export default function Players() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
   function onSubmitPlayer(data: PlayerForm) {
     createPlayer.mutate(
-      { data: { ...data, injuryStatus: data.injuryStatus ?? "fit", playerType: data.playerType ?? "team" } },
+      { data: { ...data, playerType: data.playerType ?? "team" } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListPlayersQueryKey() });
@@ -268,17 +280,16 @@ export default function Players() {
   }
 
   function onSubmitTeam(data: TeamForm) {
+    const teamName = `${data.club} - ${data.category}`;
     createTeam.mutate(
-      { data: { name: data.name, clubName: data.clubName || undefined, category: data.category || undefined, season: data.season || undefined } },
+      { data: { name: teamName, club: data.club, category: data.category, season: data.season || undefined } },
       {
         onSuccess: (created) => {
           queryClient.invalidateQueries({ queryKey: getListTeamsQueryKey() });
           setShowNewTeam(false);
-          teamForm.reset();
+          teamForm.reset({ club: "", category: "", season: "2025/26" });
           toast({ title: `Equipo "${created.name}" creado` });
-          // Auto-expand the new team folder
-          setExpandedTeams(prev => new Set([...prev, created.id]));
-          // Switch to Equipos tab so the user sees it
+          setExpandedTeams(prev => new Set([...prev, `club_${data.club}`]));
           setPlayerTypeFilter("team");
         },
         onError: () => toast({ title: "Error al crear equipo", variant: "destructive" }),
@@ -362,17 +373,21 @@ export default function Players() {
 
   // ─── Team folder view ────────────────────────────────────────────────────────
   const renderTeamFolders = () => {
-    // Build hierarchy
-    const topLevelTeams = teams.filter(t => t.parentTeamId == null);
-    const childTeamsByParent = new Map<number, typeof teams>();
+    // Group teams by club field
+    const clubNames = [...new Set(teams.map(t => t.club).filter(Boolean))] as string[];
+    const teamsByClubMap = new Map<string, typeof teams>();
+    const teamsWithoutClub: typeof teams = [];
     for (const t of teams) {
-      if (t.parentTeamId != null) {
-        if (!childTeamsByParent.has(t.parentTeamId)) childTeamsByParent.set(t.parentTeamId, []);
-        childTeamsByParent.get(t.parentTeamId)!.push(t);
+      if (t.club) {
+        if (!teamsByClubMap.has(t.club)) teamsByClubMap.set(t.club, []);
+        teamsByClubMap.get(t.club)!.push(t);
+      } else {
+        teamsWithoutClub.push(t);
       }
     }
+
     const unassigned = playersByTeam["unassigned"] ?? [];
-    const hasAny = topLevelTeams.length > 0 || unassigned.length > 0;
+    const hasAny = teams.length > 0 || unassigned.length > 0;
 
     if (isLoading) {
       return (
@@ -411,84 +426,80 @@ export default function Players() {
       );
     }
 
+    const renderTeamRow = (team: typeof teams[0], indent = false) => {
+      const teamPlayers = playersByTeam[team.id] ?? [];
+      const teamOpen = expandedTeams.has(team.id);
+      const isEmpty = teamPlayers.length === 0;
+      return (
+        <div key={team.id} className={`border-b border-border/60 last:border-0 ${indent ? "" : ""}`}>
+          <button
+            onClick={() => !isEmpty && toggleTeam(team.id)}
+            className={`w-full flex items-center gap-2.5 ${indent ? "pl-8" : "pl-4"} pr-4 py-2.5 text-left transition-colors ${isEmpty ? "cursor-default opacity-60" : "hover:bg-secondary/20"}`}
+          >
+            {teamOpen
+              ? <FolderOpen className="w-3.5 h-3.5 text-primary/80 flex-shrink-0" />
+              : <Folder className={`w-3.5 h-3.5 flex-shrink-0 ${isEmpty ? "text-muted-foreground/40" : "text-primary/40"}`} />
+            }
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-foreground">{team.category ?? team.name}</span>
+              {team.season && <span className="text-[10px] text-muted-foreground ml-2">{team.season}</span>}
+            </div>
+            <span className="text-[10px] text-muted-foreground/60 bg-secondary px-1.5 py-0.5 rounded-full flex-shrink-0">
+              {teamPlayers.length} {teamPlayers.length === 1 ? "jugador" : "jugadores"}
+            </span>
+            {!isEmpty && <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0 transition-transform duration-200 ${teamOpen ? "rotate-180" : ""}`} />}
+          </button>
+          {teamOpen && (
+            <div className="border-t border-border/40 pl-4">
+              {renderTeamPlayers(team.id, teamPlayers)}
+            </div>
+          )}
+        </div>
+      );
+    };
+
     return (
       <div className="space-y-3">
-        {/* Top-level teams */}
-        {topLevelTeams.map(team => {
-          const subTeams = childTeamsByParent.get(team.id) ?? [];
-          const directPlayers = playersByTeam[team.id] ?? [];
-          const subTeamPlayerCount = subTeams.reduce((acc, s) => acc + (playersByTeam[s.id]?.length ?? 0), 0);
-          const totalCount = directPlayers.length + subTeamPlayerCount;
-          const open = expandedTeams.has(team.id);
-          const isEmpty = totalCount === 0 && subTeams.length === 0;
+        {/* Club folders */}
+        {clubNames.map(clubName => {
+          const clubTeams = teamsByClubMap.get(clubName) ?? [];
+          const clubKey = `club_${clubName}`;
+          const open = expandedTeams.has(clubKey);
+          const totalPlayers = clubTeams.reduce((acc, t) => acc + (playersByTeam[t.id]?.length ?? 0), 0);
 
           return (
-            <div key={team.id} className={`bg-card border border-border rounded-lg overflow-hidden ${isEmpty ? "opacity-50" : ""}`}>
+            <div key={clubName} className="bg-card border border-border rounded-lg overflow-hidden">
               <button
-                onClick={() => !isEmpty && toggleTeam(team.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors ${isEmpty ? "cursor-default" : "hover:bg-secondary/30"}`}
+                onClick={() => toggleTeam(clubKey)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-secondary/30 transition-colors"
               >
-                {open ? <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" /> : <Folder className={`w-4 h-4 flex-shrink-0 ${isEmpty ? "text-muted-foreground/40" : "text-primary/60"}`} />}
+                {open ? <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" /> : <Folder className="w-4 h-4 text-primary/60 flex-shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-bold text-foreground">{team.name}</span>
-                  {(team.category || team.season) && (
-                    <span className="text-xs text-muted-foreground ml-2">{[team.category, team.season].filter(Boolean).join(" · ")}</span>
-                  )}
-                  {subTeams.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground/60 ml-2">{subTeams.length} {subTeams.length === 1 ? "subcategoría" : "subcategorías"}</span>
-                  )}
+                  <span className="text-sm font-bold text-foreground">{clubName}</span>
+                  <span className="text-[10px] text-muted-foreground/60 ml-2">{clubTeams.length} {clubTeams.length === 1 ? "equipo" : "equipos"}</span>
                 </div>
                 <span className="text-[10px] font-medium bg-secondary text-muted-foreground px-2 py-0.5 rounded-full flex-shrink-0">
-                  {isEmpty ? "Sin jugadores" : `${totalCount} ${totalCount === 1 ? "jugador" : "jugadores"}`}
+                  {totalPlayers} {totalPlayers === 1 ? "jugador" : "jugadores"}
                 </span>
-                {!isEmpty && <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />}
+                <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
               </button>
-
               {open && (
                 <div className="border-t border-border">
-                  {/* Sub-team sub-folders */}
-                  {subTeams.map(sub => {
-                    const subPlayers = playersByTeam[sub.id] ?? [];
-                    const subOpen = expandedTeams.has(sub.id);
-                    return (
-                      <div key={sub.id} className="border-b border-border/60 last:border-0">
-                        <button
-                          onClick={() => toggleTeam(sub.id)}
-                          className="w-full flex items-center gap-2.5 pl-8 pr-4 py-2.5 text-left hover:bg-secondary/20 transition-colors"
-                        >
-                          {subOpen
-                            ? <FolderOpen className="w-3.5 h-3.5 text-primary/80 flex-shrink-0" />
-                            : <Folder     className="w-3.5 h-3.5 text-primary/40 flex-shrink-0" />
-                          }
-                          <div className="flex-1 min-w-0">
-                            <span className="text-xs font-bold text-foreground">{sub.name}</span>
-                            {(sub.category || sub.season) && (
-                              <span className="text-[10px] text-muted-foreground ml-2">{[sub.category, sub.season].filter(Boolean).join(" · ")}</span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-muted-foreground/60 bg-secondary px-1.5 py-0.5 rounded-full flex-shrink-0">
-                            {subPlayers.length} {subPlayers.length === 1 ? "jugador" : "jugadores"}
-                          </span>
-                          <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0 transition-transform duration-200 ${subOpen ? "rotate-180" : ""}`} />
-                        </button>
-                        {subOpen && (
-                          <div className="border-t border-border/40 pl-4">
-                            {renderTeamPlayers(sub.id, subPlayers)}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* Direct players on the parent team */}
-                  {renderTeamPlayers(team.id, directPlayers)}
+                  {clubTeams.map(t => renderTeamRow(t, true))}
                 </div>
               )}
             </div>
           );
         })}
 
-        {/* Unassigned */}
+        {/* Teams without club */}
+        {teamsWithoutClub.map(t => (
+          <div key={t.id} className="bg-card border border-border rounded-lg overflow-hidden">
+            {renderTeamRow(t, false)}
+          </div>
+        ))}
+
+        {/* Unassigned players */}
         {unassigned.length > 0 && (
           <div className="bg-card border border-border/60 border-dashed rounded-lg overflow-hidden">
             <button
@@ -615,8 +626,8 @@ export default function Players() {
         {playerTypeFilter === "team" ? renderTeamFolders() : renderFlatList()}
 
         {/* ── New Team Modal ─────────────────────────────────────────────────────── */}
-        <Dialog open={showNewTeam} onOpenChange={(v) => { setShowNewTeam(v); if (!v) teamForm.reset(); }}>
-          <DialogContent className="bg-card border-border max-w-md">
+        <Dialog open={showNewTeam} onOpenChange={(v) => { setShowNewTeam(v); if (!v) teamForm.reset({ club: "", category: "", season: "2025/26" }); }}>
+          <DialogContent className="bg-card border-border max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-foreground flex items-center gap-2">
                 <Shield className="w-4 h-4 text-primary" />
@@ -625,79 +636,44 @@ export default function Players() {
             </DialogHeader>
             <Form {...teamForm}>
               <form onSubmit={teamForm.handleSubmit(onSubmitTeam)} className="space-y-4">
-                <FormField control={teamForm.control} name="name" render={({ field }) => (
+                <FormField control={teamForm.control} name="club" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Nombre del equipo *</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Ej: Primer Equipo, Sub-18 A…" className="bg-background border-border" autoFocus />
+                      <Input {...field} placeholder="Ej: Vallecas CF" className="bg-background border-border" autoFocus />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                <FormField control={teamForm.control} name="clubName" render={({ field }) => (
+                <FormField control={teamForm.control} name="category" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Nombre del club (opcional)" className="bg-background border-border" />
+                      <Input {...field} placeholder="Ej: Juvenil A, Sub-18…" className="bg-background border-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                <FormField control={teamForm.control} name="parentTeamId" render={({ field }) => (
+                <FormField control={teamForm.control} name="season" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Subcategoría de</FormLabel>
-                    {teams.filter(t => t.parentTeamId == null).length > 0 ? (
-                      <Select
-                        onValueChange={v => field.onChange(v === "none" ? undefined : Number(v))}
-                        value={field.value?.toString() ?? "none"}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-background border-border">
-                            <SelectValue placeholder="Equipo independiente" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-card border-border">
-                          <SelectItem value="none">Equipo independiente</SelectItem>
-                          {teams.filter(t => t.parentTeamId == null).map(t => (
-                            <SelectItem key={t.id} value={t.id.toString()}>
-                              {t.name}{t.category ? ` · ${t.category}` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <p className="text-xs text-muted-foreground/60 px-1 py-1">Crea primero un equipo principal para poder vincularlo</p>
-                    )}
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Temporada</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="2025/26" className="bg-background border-border" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={teamForm.control} name="category" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Ej: Primera, Sub-18…" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={teamForm.control} name="season" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Temporada</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="2025/26" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
+                {teamForm.watch("club") && teamForm.watch("category") && (
+                  <p className="text-[11px] text-muted-foreground bg-secondary/40 px-3 py-2 rounded border border-border/60">
+                    Se creará el equipo: <span className="font-semibold text-foreground">{teamForm.watch("club")} - {teamForm.watch("category")}</span>
+                  </p>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => { setShowNewTeam(false); teamForm.reset(); }}>
+                  <Button type="button" variant="outline" onClick={() => { setShowNewTeam(false); teamForm.reset({ club: "", category: "", season: "2025/26" }); }}>
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={createTeam.isPending}>
@@ -710,7 +686,7 @@ export default function Players() {
         </Dialog>
 
         {/* ── Add Player Modal ───────────────────────────────────────────────────── */}
-        <Dialog open={showAdd} onOpenChange={(v) => { setShowAdd(v); if (!v) { playerForm.reset(); } }}>
+        <Dialog open={showAdd} onOpenChange={(v) => { setShowAdd(v); if (!v) { playerForm.reset(); setSelectedClubFilter(null); } }}>
           <DialogContent className="bg-card border-border max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-foreground">Nuevo Jugador</DialogTitle>
@@ -818,55 +794,48 @@ export default function Players() {
                       </FormItem>
                     )} />
 
-                    {/* Equipo + Categoría (solo para jugadores de equipo) */}
+                    {/* Equipo section (solo para jugadores de equipo) */}
                     {watchedPlayerType === "team" && (
                       <>
-                        {/* ── CLUB: sólo equipos raíz (parentTeamId === null) ── */}
-                        <FormField control={playerForm.control} name="teamId" render={({ field }) => (
-                          <FormItem className="col-span-4">
-                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
-                            {rootTeams.length > 0 ? (
-                              <Select
-                                onValueChange={v => {
-                                  field.onChange(v === "none" ? undefined : Number(v));
-                                  playerForm.setValue("subteamId", undefined);
-                                }}
-                                value={field.value?.toString() ?? "none"}
+                        {/* ── CLUB dropdown (unique clubs from teams) ── */}
+                        <FormItem className="col-span-4">
+                          <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
+                          {uniqueClubs.length > 0 ? (
+                            <Select
+                              onValueChange={v => {
+                                setSelectedClubFilter(v === "none" ? null : v);
+                                playerForm.setValue("teamId", undefined);
+                              }}
+                              value={selectedClubFilter ?? "none"}
+                            >
+                              <SelectTrigger className="bg-background border-border">
+                                <SelectValue placeholder="Sin club" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-card border-border">
+                                <SelectItem value="none">Sin club</SelectItem>
+                                {uniqueClubs.map(c => (
+                                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
+                              <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span>No hay clubs creados.</span>
+                              <button
+                                type="button"
+                                onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
+                                className="text-primary hover:underline font-medium"
                               >
-                                <FormControl>
-                                  <SelectTrigger className="bg-background border-border">
-                                    <SelectValue placeholder="Sin club asignado" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="bg-card border-border">
-                                  <SelectItem value="none">Sin club</SelectItem>
-                                  {rootTeams.map(t => (
-                                    <SelectItem key={t.id} value={t.id.toString()}>
-                                      {t.name}{t.category ? ` · ${t.category}` : ""}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
-                                <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span>No hay clubs creados.</span>
-                                <button
-                                  type="button"
-                                  onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
-                                  className="text-primary hover:underline font-medium"
-                                >
-                                  Crear un club
-                                </button>
-                              </div>
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        )} />
+                                Crear un club
+                              </button>
+                            </div>
+                          )}
+                        </FormItem>
 
-                        {/* ── EQUIPO: aparece solo si el club tiene subteams ── */}
-                        {availableSubteams.length > 0 && (
-                          <FormField control={playerForm.control} name="subteamId" render={({ field }) => (
+                        {/* ── EQUIPO: teams filtered by selected club ── */}
+                        {selectedClubFilter && teamsForClub.length > 0 && (
+                          <FormField control={playerForm.control} name="teamId" render={({ field }) => (
                             <FormItem className="col-span-4">
                               <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
                               <Select
@@ -880,8 +849,8 @@ export default function Players() {
                                 </FormControl>
                                 <SelectContent className="bg-card border-border">
                                   <SelectItem value="none">Sin equipo</SelectItem>
-                                  {availableSubteams.map(s => (
-                                    <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                                  {teamsForClub.map(t => (
+                                    <SelectItem key={t.id} value={t.id.toString()}>{t.category ?? t.name}</SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -889,28 +858,40 @@ export default function Players() {
                             </FormItem>
                           )} />
                         )}
+
+                        {/* ── TEMPORADA: display only from selected team ── */}
+                        {selectedTeamData?.season && (
+                          <div className="col-span-4">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Temporada</p>
+                            <p className="text-sm text-foreground px-3 py-2 bg-secondary/30 border border-border/50 rounded">{selectedTeamData.season}</p>
+                          </div>
+                        )}
                       </>
                     )}
 
-                    <FormField control={playerForm.control} name="injuryStatus" render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Riesgo Lesional</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-background border-border">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-card border-border">
-                            <SelectItem value="fit">Apto</SelectItem>
-                            <SelectItem value="minor_risk">Riesgo Menor</SelectItem>
-                            <SelectItem value="injured">Lesionado</SelectItem>
-                            <SelectItem value="recovery">Recuperación</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                    {/* Atleta individual section */}
+                    {watchedPlayerType === "individual" && (
+                      <>
+                        <FormField control={playerForm.control} name="category" render={({ field }) => (
+                          <FormItem className="col-span-4">
+                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría personalizada</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Ej: Velocidad, Fuerza…" className="bg-background border-border" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={playerForm.control} name="team" render={({ field }) => (
+                          <FormItem className="col-span-4">
+                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Nombre del club (opcional)" className="bg-background border-border" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </>
+                    )}
 
                     <FormField control={playerForm.control} name="preferredFoot" render={({ field }) => (
                       <FormItem className="col-span-2">
@@ -961,15 +942,24 @@ export default function Players() {
                       </FormItem>
                     )} />
 
-                    <FormField control={playerForm.control} name="contractEnd" render={({ field }) => (
+                    <FormField control={playerForm.control} name="weight" render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Fin de contrato</FormLabel>
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Peso (kg)</FormLabel>
                         <FormControl>
-                          <Input {...field} type="date" className="bg-background border-border" />
+                          <Input {...field} type="number" min={40} max={150} placeholder="75" className="bg-background border-border" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
+
+                    {/* IMC */}
+                    {imc !== null && (
+                      <div className="col-span-4 flex items-center gap-3 px-3 py-2 bg-secondary/30 border border-border/50 rounded">
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">IMC</span>
+                        <span className="text-sm font-semibold text-foreground">{imc.toFixed(1)}</span>
+                        {imcLabel && <span className={`text-xs font-medium ${imcLabel.color}`}>{imcLabel.text}</span>}
+                      </div>
+                    )}
 
                     <FormField control={playerForm.control} name="observations" render={({ field }) => (
                       <FormItem className="col-span-4">
@@ -986,7 +976,7 @@ export default function Players() {
 
                 {/* Botones siempre visibles fuera del área scrollable */}
                 <div className="flex justify-end gap-2 pt-3 mt-1 border-t border-border flex-shrink-0">
-                  <Button type="button" variant="outline" onClick={() => { setShowAdd(false); playerForm.reset(); }}>
+                  <Button type="button" variant="outline" onClick={() => { setShowAdd(false); playerForm.reset(); setSelectedClubFilter(null); }}>
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={createPlayer.isPending}>

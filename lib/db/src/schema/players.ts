@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, numeric, jsonb, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, jsonb, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { teamsTable } from "./teams";
@@ -11,8 +11,8 @@ export const playersTable = pgTable("players", {
   number: integer("number").notNull(),
   age: integer("age").notNull(),
   team: text("team"),
-  height: numeric("height", { precision: 5, scale: 1 }),
-  weight: numeric("weight", { precision: 5, scale: 1 }),
+  height: integer("height"),
+  weight: integer("weight"),
   dominantFoot: text("dominant_foot"),
   nationality: text("nationality"),
   injuryStatus: text("injury_status").notNull().default("fit"),

@@ -24,7 +24,7 @@ import {
 import {
   ArrowLeft, User, Activity, Dumbbell, AlertTriangle, ShieldCheck,
   Clock, Zap, Gauge, TrendingUp, Heart, FileDown, GitCompare,
-  Plus, Stethoscope, ChevronDown,
+  Plus, Stethoscope, ChevronDown, Upload, Info,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -47,10 +47,11 @@ const injuryLabel: Record<string, string> = {
   fit: "Apto", minor_risk: "Riesgo Menor", injured: "Lesionado", recovery: "Recuperación",
 };
 const profileTypeColor: Record<string, string> = {
-  "Power Profile":    "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  "Strength Profile": "bg-orange-500/15 text-orange-400 border-orange-500/30",
-  "Force Profile":    "bg-purple-500/15 text-purple-400 border-purple-500/30",
-  "Balanced Profile": "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  "Power Profile":         "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  "Strength Profile":      "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  "Perfil Neuromuscular":  "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  "Force Profile":         "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  "Balanced Profile":      "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
 };
 const alertSeverityStyle: Record<string, { bar: string; icon: string; bg: string }> = {
   critical: { bar: "bg-red-500",    icon: "text-red-400",    bg: "bg-red-500/5 border-red-500/20" },
@@ -191,6 +192,15 @@ export default function PlayerProfile() {
     const ids = (s.playerIds as number[]) ?? [];
     return ids.includes(id);
   }) ?? [];
+
+  // ── Chronojump local image ────────────────────────────────────────────────
+  const [chronojumpImage, setChronojumpImage] = useState<string | null>(null);
+  function handleChronojumpImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setChronojumpImage(url);
+  }
 
   // ── Injuries ──────────────────────────────────────────────────────────────
   const [selectedSeason, setSelectedSeason] = useState<string>("2025/26");
@@ -524,9 +534,9 @@ export default function PlayerProfile() {
                       <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.3} />
                       <XAxis dataKey="name" tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
                       <YAxis domain={[0, 100]} tickCount={5} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} tickLine={false} axisLine={false} />
-                      <ReferenceArea y1={42} y2={52} fill="#10b981" fillOpacity={0.08} />
-                      <ReferenceLine y={42} stroke="#10b981" strokeDasharray="4 2" strokeOpacity={0.45} strokeWidth={1} />
-                      <ReferenceLine y={52} stroke="#10b981" strokeDasharray="4 2" strokeOpacity={0.45} strokeWidth={1} />
+                      <ReferenceArea y1={42} y2={50} fill="#10b981" fillOpacity={0.12} />
+                      <ReferenceLine y={42} stroke="#10b981" strokeDasharray="4 2" strokeOpacity={0.55} strokeWidth={1} />
+                      <ReferenceLine y={50} stroke="#10b981" strokeDasharray="4 2" strokeOpacity={0.55} strokeWidth={1} />
                       <Tooltip
                         cursor={{ fill: "hsl(var(--border))", opacity: 0.2 }}
                         contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11 }}
@@ -581,7 +591,7 @@ export default function PlayerProfile() {
                 {/* Score bars */}
                 <div className="space-y-2.5 pt-2 border-t border-border">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Rango óptimo: 42–52</span>
+                    <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Rango óptimo: 42–50</span>
                     <span className="text-[10px] text-muted-foreground/50">Score</span>
                   </div>
                   {[
@@ -590,10 +600,10 @@ export default function PlayerProfile() {
                     { label: "Drive", value: neuro.drive, color: "#8b5cf6" },
                   ].map(({ label, value, color }) => {
                     const v = Math.round(value);
-                    const inRange = v >= 42 && v <= 52;
+                    const inRange = v >= 42 && v <= 50;
                     const below = v < 42;
-                    const status = inRange ? "Óptimo" : below ? "Déficit" : "Elevado";
-                    const statusColor = inRange ? "#10b981" : below ? "#f59e0b" : "#3b82f6";
+                    const status = inRange ? "En rango óptimo" : below ? "Por debajo del óptimo" : "Por encima del óptimo";
+                    const statusColor = inRange ? "#10b981" : below ? "#ef4444" : "#06b6d4";
                     return (
                       <div key={label}>
                         <div className="flex items-center justify-between mb-1">
@@ -604,7 +614,7 @@ export default function PlayerProfile() {
                           </div>
                         </div>
                         <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="absolute h-full bg-emerald-500/15 rounded" style={{ left: "42%", width: "10%" }} />
+                          <div className="absolute h-full bg-emerald-500/20 rounded" style={{ left: "42%", width: "8%" }} />
                           <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(v, 100)}%`, background: `linear-gradient(90deg, ${color}60, ${color})` }} />
                         </div>
                       </div>
@@ -612,7 +622,7 @@ export default function PlayerProfile() {
                   })}
                   {(() => {
                     const l = Math.round(neuro.load), e = Math.round(neuro.explode), d = Math.round(neuro.drive);
-                    if (l >= 42 && l <= 52 && e >= 42 && e <= 52 && d >= 42 && d <= 52) return (
+                    if (l >= 42 && l <= 50 && e >= 42 && e <= 50 && d >= 42 && d <= 50) return (
                       <div className="flex items-center gap-2 mt-1 px-2 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/20">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         <span className="text-[10px] text-emerald-400 font-semibold">Perfil equilibrado — Load, Explode y Drive dentro del rango óptimo</span>
@@ -647,13 +657,22 @@ export default function PlayerProfile() {
                   <MetricCard label="CMJ Height" value={neuro.cmjHeight != null ? Number(neuro.cmjHeight.toFixed(1)) : null} unit="cm" status={neuro.cmjHeight != null ? (neuro.cmjHeight < 25 ? "critical" : neuro.cmjHeight < 30 ? "warn" : "ok") : undefined} />
                   <MetricCard label="Squat Jump" value={neuro.squatJump != null ? Number(neuro.squatJump.toFixed(1)) : null} unit="cm" />
                   <MetricCard label="RSI" value={neuro.rsi != null ? Number(neuro.rsi.toFixed(2)) : null} unit="" status={neuro.rsi != null ? (neuro.rsi < 1.0 ? "critical" : neuro.rsi < 1.5 ? "warn" : "ok") : undefined} />
-                  <div className="bg-secondary/50 rounded p-3 border border-amber-500/20 col-span-2">
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">Asimetría Bilateral</div>
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-amber-400/90 leading-relaxed">Pendiente de datos Chronojump unilateral.</p>
+                  {neuro.asymmetryIndex != null ? (
+                    <MetricCard
+                      label="Asimetría Bilateral"
+                      value={Number(neuro.asymmetryIndex.toFixed(1))}
+                      unit="%"
+                      status={neuro.asymmetryIndex > 15 ? "critical" : neuro.asymmetryIndex > 10 ? "warn" : "ok"}
+                    />
+                  ) : (
+                    <div className="bg-secondary/50 rounded p-3 border border-border/40 col-span-2">
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">Asimetría Bilateral</div>
+                      <div className="flex items-start gap-2">
+                        <Info className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-muted-foreground/70 leading-relaxed">Pendiente de importar datos unilaterales desde Chronojump.</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <MetricCard label="Fuerza Isométrica" value={neuro.isometricForce != null ? Math.round(neuro.isometricForce) : null} unit="N" />
                   <MetricCard label="Fuerza Relativa" value={neuro.forcePerKg != null ? Number(neuro.forcePerKg.toFixed(1)) : null} unit="N/kg" status={neuro.forcePerKg != null ? (neuro.forcePerKg < 15 ? "critical" : neuro.forcePerKg < 20 ? "warn" : "ok") : undefined} />
                 </div>
@@ -700,31 +719,44 @@ export default function PlayerProfile() {
           </div>
         )}
 
-        {/* ── Chronojump placeholder ───────────────────────────────────────── */}
+        {/* ── Chronojump image uploader ─────────────────────────────────────── */}
         <div className="bg-card border border-border rounded p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-4 h-4 text-muted-foreground/60" />
+            <Activity className="w-4 h-4 text-primary/70" />
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Imagen Chronojump · Perfil Original</h2>
-            <span className="ml-auto text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground/50">Próximamente</span>
           </div>
-          <div className="flex gap-5 flex-wrap">
-            <div className="flex-1 min-w-[200px] h-36 rounded-lg border border-dashed border-border/60 bg-secondary/30 flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                <Heart className="w-5 h-5 text-muted-foreground/30" />
+          {chronojumpImage ? (
+            <div className="space-y-3">
+              <img
+                src={chronojumpImage}
+                alt="Perfil Chronojump"
+                className="w-full max-h-72 object-contain rounded-lg border border-border bg-secondary/20"
+              />
+              <div className="flex gap-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border rounded px-3 py-1.5 cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5" /> Cambiar imagen
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleChronojumpImage} />
+                </label>
+                <button
+                  onClick={() => setChronojumpImage(null)}
+                  className="text-xs text-red-400/70 hover:text-red-400 border border-red-500/20 rounded px-3 py-1.5 transition-colors"
+                >
+                  Eliminar
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground/50 text-center px-4">Sube aquí la captura del perfil neuromuscular de Chronojump</p>
-              <button disabled className="text-[10px] font-semibold text-muted-foreground/40 border border-border/40 rounded px-3 py-1 cursor-not-allowed">Subir imagen</button>
             </div>
-            <div className="flex-1 min-w-[200px] flex flex-col justify-center gap-2">
-              <div className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-semibold mb-1">Esta sección incluirá</div>
-              {["Perfil F-V exportado de Chronojump", "Gráfico bilateral / unilateral original", "Curva de potencia original del test", "Imagen adjunta al informe PDF"].map(item => (
-                <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30 flex-shrink-0" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-3 h-36 rounded-lg border border-dashed border-border/60 bg-secondary/20 cursor-pointer hover:bg-secondary/30 hover:border-primary/40 transition-all group">
+              <div className="w-10 h-10 rounded-lg bg-secondary group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                <Upload className="w-5 h-5 text-muted-foreground/50 group-hover:text-primary/60 transition-colors" />
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-semibold text-muted-foreground/70 group-hover:text-foreground/70 transition-colors">Subir captura de Chronojump</p>
+                <p className="text-[10px] text-muted-foreground/40 mt-0.5">JPG · PNG · WebP</p>
+              </div>
+              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleChronojumpImage} />
+            </label>
+          )}
         </div>
 
         {/* ── Alerts ───────────────────────────────────────────────────────── */}

@@ -5,7 +5,7 @@ import { FileText, FileDown, ChevronRight, Shield, Zap, Target, User, AlertTrian
 
 const PROFILE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
   "Power Profile":    { bg: "bg-blue-500/10",    border: "border-blue-500/25",   text: "text-blue-400" },
-  "Strength Profile": { bg: "bg-orange-500/10",  border: "border-orange-500/25", text: "text-orange-400" },
+  "Perfil Neuromuscular": { bg: "bg-orange-500/10",  border: "border-orange-500/25", text: "text-orange-400" },
   "Force Profile":    { bg: "bg-purple-500/10",  border: "border-purple-500/25", text: "text-purple-400" },
   "Balanced Profile": { bg: "bg-emerald-500/10", border: "border-emerald-500/25",text: "text-emerald-400" },
 };
