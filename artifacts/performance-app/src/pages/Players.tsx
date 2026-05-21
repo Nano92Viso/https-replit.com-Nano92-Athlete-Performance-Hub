@@ -798,8 +798,8 @@ export default function Players() {
                     {watchedPlayerType === "team" && (
                       <>
                         {/* ── CLUB dropdown (unique clubs from teams) ── */}
-                        <FormItem className="col-span-4">
-                          <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
+                        <div className="col-span-4 space-y-1.5">
+                          <label className="text-xs text-muted-foreground uppercase tracking-wider">Club</label>
                           {uniqueClubs.length > 0 ? (
                             <Select
                               onValueChange={v => {
@@ -831,7 +831,7 @@ export default function Players() {
                               </button>
                             </div>
                           )}
-                        </FormItem>
+                        </div>
 
                         {/* ── EQUIPO: teams filtered by selected club ── */}
                         {selectedClubFilter && teamsForClub.length > 0 && (
