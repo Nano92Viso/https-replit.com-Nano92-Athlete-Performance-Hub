@@ -8,6 +8,7 @@ import {
   getGetPlayerQueryKey,
   getGetPlayerNeuromuscularQueryKey,
   getGetPlayerAlertsQueryKey,
+  getListPlayersQueryKey,
 } from "@workspace/api-client-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
@@ -265,6 +266,7 @@ export default function PlayerProfile() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: getGetPlayerQueryKey(id) });
+      queryClient.invalidateQueries({ queryKey: getListPlayersQueryKey() });
     },
   });
 

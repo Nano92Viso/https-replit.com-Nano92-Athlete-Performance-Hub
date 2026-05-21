@@ -821,10 +821,10 @@ export default function Players() {
                     {/* Equipo + Categoría (solo para jugadores de equipo) */}
                     {watchedPlayerType === "team" && (
                       <>
-                        {/* ── EQUIPO: sólo equipos raíz (parentTeamId === null) ── */}
+                        {/* ── CLUB: sólo equipos raíz (parentTeamId === null) ── */}
                         <FormField control={playerForm.control} name="teamId" render={({ field }) => (
                           <FormItem className="col-span-4">
-                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
+                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Club</FormLabel>
                             {rootTeams.length > 0 ? (
                               <Select
                                 onValueChange={v => {
@@ -835,11 +835,11 @@ export default function Players() {
                               >
                                 <FormControl>
                                   <SelectTrigger className="bg-background border-border">
-                                    <SelectValue placeholder="Sin equipo asignado" />
+                                    <SelectValue placeholder="Sin club asignado" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent className="bg-card border-border">
-                                  <SelectItem value="none">Sin equipo</SelectItem>
+                                  <SelectItem value="none">Sin club</SelectItem>
                                   {rootTeams.map(t => (
                                     <SelectItem key={t.id} value={t.id.toString()}>
                                       {t.name}{t.category ? ` · ${t.category}` : ""}
@@ -850,13 +850,13 @@ export default function Players() {
                             ) : (
                               <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
                                 <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span>No hay equipos creados.</span>
+                                <span>No hay clubs creados.</span>
                                 <button
                                   type="button"
                                   onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
                                   className="text-primary hover:underline font-medium"
                                 >
-                                  Crear un equipo
+                                  Crear un club
                                 </button>
                               </div>
                             )}
@@ -864,22 +864,22 @@ export default function Players() {
                           </FormItem>
                         )} />
 
-                        {/* ── CATEGORÍA: aparece solo si el equipo tiene subteams ── */}
+                        {/* ── EQUIPO: aparece solo si el club tiene subteams ── */}
                         {availableSubteams.length > 0 && (
                           <FormField control={playerForm.control} name="subteamId" render={({ field }) => (
                             <FormItem className="col-span-4">
-                              <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría</FormLabel>
+                              <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
                               <Select
                                 onValueChange={v => field.onChange(v === "none" ? undefined : Number(v))}
                                 value={field.value?.toString() ?? "none"}
                               >
                                 <FormControl>
                                   <SelectTrigger className="bg-background border-border">
-                                    <SelectValue placeholder="Sin categoría" />
+                                    <SelectValue placeholder="Sin equipo" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent className="bg-card border-border">
-                                  <SelectItem value="none">Sin categoría</SelectItem>
+                                  <SelectItem value="none">Sin equipo</SelectItem>
                                   {availableSubteams.map(s => (
                                     <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
                                   ))}
