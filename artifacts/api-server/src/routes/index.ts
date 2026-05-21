@@ -8,10 +8,12 @@ import generatorRouter from "./generator";
 import teamsRouter from "./teams";
 import injuriesRouter from "./injuries";
 import playerGroupsRouter from "./player_groups";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(adminRouter);
 router.use(teamsRouter);
 router.use(injuriesRouter);
 router.use(playerGroupsRouter);

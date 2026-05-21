@@ -68,6 +68,21 @@ const riskLabel: Record<string, string> = {
   high: "Alto",
 };
 
+const physicalBadge: Record<string, string> = {
+  available:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  doubt:      "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+  recovery:   "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  injured:    "bg-red-500/15 text-red-400 border-red-500/30",
+  sanctioned: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+};
+const physicalLabel: Record<string, string> = {
+  available:  "Disponible",
+  doubt:      "Duda",
+  recovery:   "Recuperación",
+  injured:    "Lesionado",
+  sanctioned: "Sancionado",
+};
+
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const playerSchema = z.object({
@@ -115,6 +130,7 @@ type AnyPlayer = {
   teamId?: number | null;
   playerType?: string | null;
   category?: string | null;
+  physicalStatus?: string | null;
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -127,6 +143,9 @@ function PlayerRow({ player, teamLabel }: { player: AnyPlayer; teamLabel?: strin
     : player.teamId
     ? "Sin nombre de equipo"
     : "Sin equipo";
+  const statusKey = player.physicalStatus ?? player.injuryStatus;
+  const statusBadgeClass = physicalBadge[statusKey] ?? injuryBadge[statusKey] ?? "";
+  const statusText = physicalLabel[statusKey] ?? injuryLabel[statusKey] ?? statusKey;
 
   return (
     <Link href={`/players/${player.id}`}>
@@ -156,8 +175,8 @@ function PlayerRow({ player, teamLabel }: { player: AnyPlayer; teamLabel?: strin
           </div>
         </div>
         <span className="hidden sm:block text-xs text-muted-foreground whitespace-nowrap">{player.position}</span>
-        <span className={`hidden md:inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider ${injuryBadge[player.injuryStatus] ?? ""}`}>
-          {injuryLabel[player.injuryStatus] ?? player.injuryStatus}
+        <span className={`hidden md:inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-medium uppercase tracking-wider ${statusBadgeClass}`}>
+          {statusText}
         </span>
         <span className={`hidden lg:block text-xs font-medium ${riskBadge[player.riskLevel] ?? "text-muted-foreground"}`}>
           {riskLabel[player.riskLevel] ?? player.riskLevel}
@@ -266,11 +285,15 @@ export default function Players() {
 
   // ── Group players by teamId ──────────────────────────────────────────────────
   const playersByTeam = useMemo(() => {
-    const map: Record<number | "unassigned", AnyPlayer[]> = { unassigned: [] };
+    const map: Record<number | string, AnyPlayer[]> = { unassigned: [], individual: [] };
     for (const p of players as AnyPlayer[]) {
-      const key = p.teamId ?? "unassigned";
-      if (!map[key]) map[key] = [];
-      map[key].push(p);
+      if (p.playerType === "individual") {
+        map["individual"].push(p);
+      } else {
+        const key = p.teamId ?? "unassigned";
+        if (!map[key]) map[key] = [];
+        map[key].push(p);
+      }
     }
     return map;
   }, [players]);
@@ -295,8 +318,9 @@ export default function Players() {
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   function onSubmitPlayer(data: PlayerForm) {
+    const isTeam = data.playerType === "team";
     createPlayer.mutate(
-      { data: { ...data, playerType: data.playerType ?? "team" } },
+      { data: { ...data, playerType: data.playerType ?? "team", teamId: isTeam ? data.teamId : undefined } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListPlayersQueryKey() });
@@ -427,7 +451,8 @@ export default function Players() {
     }
 
     const unassigned = playersByTeam["unassigned"] ?? [];
-    const hasAny = teams.length > 0 || unassigned.length > 0;
+    const individuals = playersByTeam["individual"] ?? [];
+    const hasAny = teams.length > 0 || unassigned.length > 0 || individuals.length > 0;
 
     if (isLoading) {
       return (
@@ -561,6 +586,34 @@ export default function Players() {
                 <PlayerTableHeader />
                 <div className="divide-y divide-border">
                   {unassigned.map(p => <PlayerRow key={p.id} player={p} />)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Individual athletes */}
+        {individuals.length > 0 && (
+          <div className="bg-card border border-violet-500/20 border-dashed rounded-lg overflow-hidden">
+            <button
+              onClick={() => toggleTeam("individual")}
+              className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-secondary/20 transition-colors"
+            >
+              {expandedTeams.has("individual")
+                ? <FolderOpen className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                : <Folder     className="w-4 h-4 text-violet-400/60 flex-shrink-0" />
+              }
+              <span className="text-sm font-medium text-muted-foreground flex-1">Atletas individuales</span>
+              <span className="text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                {individuals.length} {individuals.length === 1 ? "atleta" : "atletas"}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${expandedTeams.has("individual") ? "rotate-180" : ""}`} />
+            </button>
+            {expandedTeams.has("individual") && (
+              <div className="border-t border-border/60">
+                <PlayerTableHeader />
+                <div className="divide-y divide-border">
+                  {individuals.map(p => <PlayerRow key={p.id} player={p} />)}
                 </div>
               </div>
             )}

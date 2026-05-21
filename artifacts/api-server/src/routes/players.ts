@@ -199,8 +199,8 @@ router.post("/players/import-csv", async (req, res): Promise<void> => {
             age: isNaN(age) ? existingPlayer.age : age,
             team,
             nationality,
-            height: height?.toString(),
-            weight: weight?.toString(),
+            height: height != null ? Math.round(height) : null,
+            weight: weight != null ? Math.round(weight) : null,
             dominantFoot,
             lastTestDate: new Date().toISOString().split("T")[0],
           })
@@ -217,8 +217,8 @@ router.post("/players/import-csv", async (req, res): Promise<void> => {
             age: isNaN(age) ? 22 : age,
             team,
             nationality,
-            height: height?.toString(),
-            weight: weight?.toString(),
+            height: height != null ? Math.round(height) : null,
+            weight: weight != null ? Math.round(weight) : null,
             dominantFoot,
             injuryStatus,
             riskLevel: "low",
@@ -304,8 +304,8 @@ router.post("/players", async (req, res): Promise<void> => {
     number: parsed.data.number,
     age: parsed.data.age,
     team: parsed.data.team,
-    height: parsed.data.height?.toString(),
-    weight: parsed.data.weight?.toString(),
+    height: parsed.data.height ?? null,
+    weight: parsed.data.weight ?? null,
     dominantFoot: parsed.data.dominantFoot,
     nationality: parsed.data.nationality,
     injuryStatus: parsed.data.injuryStatus ?? "fit",
@@ -378,8 +378,8 @@ router.patch("/players/:id", async (req, res): Promise<void> => {
   if (parsed.data.number !== undefined) updateData.number = parsed.data.number;
   if (parsed.data.age !== undefined) updateData.age = parsed.data.age;
   if (parsed.data.team !== undefined) updateData.team = parsed.data.team;
-  if (parsed.data.height !== undefined) updateData.height = parsed.data.height?.toString();
-  if (parsed.data.weight !== undefined) updateData.weight = parsed.data.weight?.toString();
+  if (parsed.data.height !== undefined) updateData.height = parsed.data.height ?? null;
+  if (parsed.data.weight !== undefined) updateData.weight = parsed.data.weight ?? null;
   if (parsed.data.dominantFoot !== undefined) updateData.dominantFoot = parsed.data.dominantFoot;
   if (parsed.data.nationality !== undefined) updateData.nationality = parsed.data.nationality;
   if (parsed.data.injuryStatus !== undefined) updateData.injuryStatus = parsed.data.injuryStatus;

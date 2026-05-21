@@ -30,7 +30,7 @@ function serializeSubteam(s: typeof subteamsTable.$inferSelect) {
 // ─── Teams ───────────────────────────────────────────────────────────────────
 
 router.get("/teams", async (_req, res): Promise<void> => {
-  const teams = await db.select().from(teamsTable).orderBy(teamsTable.name);
+  const teams = await db.select().from(teamsTable).orderBy(teamsTable.club, teamsTable.category);
   const subteams = await db.select().from(subteamsTable).orderBy(subteamsTable.name);
 
   const result = teams.map(t => ({
