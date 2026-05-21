@@ -131,18 +131,23 @@ type AnyPlayer = {
   playerType?: string | null;
   category?: string | null;
   physicalStatus?: string | null;
+  teamData?: { id: number; club: string | null; category: string | null; season: string | null } | null;
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function PlayerRow({ player, teamLabel }: { player: AnyPlayer; teamLabel?: string }) {
-  const subtitle = teamLabel
-    ? teamLabel
-    : player.playerType === "individual"
-    ? "Atleta individual"
-    : player.teamId
-    ? "Sin nombre de equipo"
-    : "Sin equipo";
+  const subtitle = (() => {
+    const td = player.teamData;
+    if (td) {
+      const parts = [td.club, td.category].filter(Boolean);
+      if (parts.length > 0) return parts.join(" · ");
+    }
+    if (teamLabel) return teamLabel;
+    if (player.playerType === "individual") return "Atleta individual";
+    if (player.teamId) return "Sin nombre de equipo";
+    return "Sin equipo";
+  })();
   const statusKey = player.physicalStatus ?? player.injuryStatus;
   const statusBadgeClass = physicalBadge[statusKey] ?? injuryBadge[statusKey] ?? "";
   const statusText = physicalLabel[statusKey] ?? injuryLabel[statusKey] ?? statusKey;
@@ -319,6 +324,10 @@ export default function Players() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
   function onSubmitPlayer(data: PlayerForm) {
     const isTeam = data.playerType === "team";
+    if (isTeam && !data.teamId) {
+      toast({ title: "Selecciona un club y una categoría antes de guardar", variant: "destructive" });
+      return;
+    }
     createPlayer.mutate(
       { data: { ...data, playerType: data.playerType ?? "team", teamId: isTeam ? data.teamId : undefined } },
       {
@@ -492,7 +501,7 @@ export default function Players() {
     }
 
     const renderTeamRow = (team: typeof teams[0], indent = false) => {
-      const teamPlayers = playersByTeam[team.id] ?? [];
+      const teamPlayers = playersByTeam[Number(team.id)] ?? [];
       const teamOpen = expandedTeams.has(team.id);
       const isEmpty = teamPlayers.length === 0;
       return (
@@ -530,7 +539,7 @@ export default function Players() {
           const clubTeams = teamsByClubMap.get(clubName) ?? [];
           const clubKey = `club_${clubName}`;
           const open = expandedTeams.has(clubKey);
-          const totalPlayers = clubTeams.reduce((acc, t) => acc + (playersByTeam[t.id]?.length ?? 0), 0);
+          const totalPlayers = clubTeams.reduce((acc, t) => acc + (playersByTeam[Number(t.id)]?.length ?? 0), 0);
 
           return (
             <div key={clubName} className="bg-card border border-border rounded-lg overflow-hidden">

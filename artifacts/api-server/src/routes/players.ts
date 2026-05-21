@@ -1,10 +1,9 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, and, type SQL } from "drizzle-orm";
 import { z } from "zod/v4";
-import { db, playersTable, neuromuscularTable } from "@workspace/db";
+import { db, playersTable, neuromuscularTable, teamsTable } from "@workspace/db";
 import {
   ListPlayersQueryParams,
-  ListPlayersResponse,
   CreatePlayerBody,
   GetPlayerParams,
   GetPlayerResponse,
@@ -127,13 +126,57 @@ router.get("/players", async (req, res): Promise<void> => {
   if (query.data.teamId) conditions.push(eq(playersTable.teamId!, query.data.teamId));
   if (query.data.groupId) conditions.push(eq(playersTable.groupId!, query.data.groupId));
 
-  const players = await db
-    .select()
+  const rows = await db
+    .select({
+      id: playersTable.id,
+      name: playersTable.name,
+      position: playersTable.position,
+      number: playersTable.number,
+      age: playersTable.age,
+      team: playersTable.team,
+      height: playersTable.height,
+      weight: playersTable.weight,
+      dominantFoot: playersTable.dominantFoot,
+      nationality: playersTable.nationality,
+      injuryStatus: playersTable.injuryStatus,
+      riskLevel: playersTable.riskLevel,
+      injuryHistory: playersTable.injuryHistory,
+      lastTestDate: playersTable.lastTestDate,
+      createdAt: playersTable.createdAt,
+      playerType: playersTable.playerType,
+      teamId: playersTable.teamId,
+      subteamId: playersTable.subteamId,
+      groupId: playersTable.groupId,
+      category: playersTable.category,
+      photoUrl: playersTable.photoUrl,
+      observations: playersTable.observations,
+      physicalStatus: playersTable.physicalStatus,
+      birthDate: playersTable.birthDate,
+      birthPlace: playersTable.birthPlace,
+      preferredFoot: playersTable.preferredFoot,
+      contractEnd: playersTable.contractEnd,
+      teamClub: teamsTable.club,
+      teamCategory: teamsTable.category,
+      teamSeason: teamsTable.season,
+      teamName: teamsTable.name,
+      teamTableId: teamsTable.id,
+    })
     .from(playersTable)
+    .leftJoin(teamsTable, eq(playersTable.teamId, teamsTable.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(playersTable.name);
 
-  res.json(ListPlayersResponse.parse(players.map(serializePlayer)));
+  const result = rows.map(({ teamClub, teamCategory, teamSeason, teamName, teamTableId, ...playerRow }) => ({
+    ...serializePlayer(playerRow as typeof playersTable.$inferSelect),
+    teamData: teamTableId != null ? {
+      id: teamTableId,
+      club: teamClub,
+      category: teamCategory,
+      season: teamSeason,
+    } : null,
+  }));
+
+  res.json(result);
 });
 
 // ── CSV Import (must be before /:id route) ───────────────────────────────────
