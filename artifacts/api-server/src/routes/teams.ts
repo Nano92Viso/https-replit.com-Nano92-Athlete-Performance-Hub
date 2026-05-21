@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db, teamsTable, subteamsTable } from "@workspace/db";
 import {
@@ -45,7 +45,25 @@ router.post("/teams", async (req, res): Promise<void> => {
   const parsed = CreateTeamBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
-  const [team] = await db.insert(teamsTable).values(parsed.data).returning();
+  const { club, category } = parsed.data;
+
+  // Dedup: return existing team if club+category already exists (case-insensitive)
+  if (club && category) {
+    const [existing] = await db.select().from(teamsTable).where(
+      and(
+        sql`lower(trim(${teamsTable.club})) = lower(trim(${club}))`,
+        sql`lower(trim(${teamsTable.category})) = lower(trim(${category}))`
+      )
+    );
+    if (existing) {
+      res.status(200).json(serializeTeam(existing));
+      return;
+    }
+  }
+
+  // Auto-generate name from club+category if not explicitly provided
+  const name = parsed.data.name || (club && category ? `${club.trim()} - ${category.trim()}` : club ?? category ?? "Sin nombre");
+  const [team] = await db.insert(teamsTable).values({ ...parsed.data, name }).returning();
   res.status(201).json(serializeTeam(team));
 });
 

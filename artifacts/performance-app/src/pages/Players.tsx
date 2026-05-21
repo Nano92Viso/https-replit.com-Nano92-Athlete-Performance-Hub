@@ -119,7 +119,15 @@ type AnyPlayer = {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PlayerRow({ player }: { player: AnyPlayer }) {
+function PlayerRow({ player, teamLabel }: { player: AnyPlayer; teamLabel?: string }) {
+  const subtitle = teamLabel
+    ? teamLabel
+    : player.playerType === "individual"
+    ? "Atleta individual"
+    : player.teamId
+    ? "Sin nombre de equipo"
+    : "Sin equipo";
+
   return (
     <Link href={`/players/${player.id}`}>
       <div className="grid grid-cols-[1fr_auto_auto_auto_auto_32px] gap-x-4 items-center px-4 py-3.5 hover:bg-secondary/40 cursor-pointer transition-colors">
@@ -144,7 +152,7 @@ function PlayerRow({ player }: { player: AnyPlayer }) {
                 <span className="text-[9px] bg-violet-500/15 text-violet-400 border border-violet-500/25 px-1.5 py-0.5 rounded uppercase tracking-wider font-medium flex-shrink-0">Ind.</span>
               )}
             </div>
-            <div className="text-xs text-muted-foreground">{player.nationality ?? "—"} · {player.age} años</div>
+            <div className="text-xs text-muted-foreground truncate">{subtitle}</div>
           </div>
         </div>
         <span className="hidden sm:block text-xs text-muted-foreground whitespace-nowrap">{player.position}</span>
@@ -228,6 +236,28 @@ export default function Players() {
   // Season of currently selected team
   const selectedTeamData = teams.find(t => t.id === watchedTeamId);
 
+  // Map teamId → display label "Club · Categoría" for flat list
+  const teamLabelMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const t of teams) {
+      if (t.club && t.category) map[t.id] = `${t.club} · ${t.category}`;
+      else if (t.club) map[t.id] = t.club;
+      else if (t.category) map[t.id] = t.category;
+      else map[t.id] = t.name;
+    }
+    return map;
+  }, [teams]);
+
+  // Count duplicate teams (same club+category, case-insensitive)
+  const duplicateTeamsCount = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const t of teams) {
+      const key = `${(t.club ?? "").toLowerCase().trim()}|${(t.category ?? "").toLowerCase().trim()}`;
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+    }
+    return [...seen.values()].filter(c => c > 1).reduce((acc, c) => acc + c - 1, 0);
+  }, [teams]);
+
   // ── Team form ────────────────────────────────────────────────────────────────
   const teamForm = useForm<TeamForm>({
     resolver: zodResolver(teamSchema),
@@ -280,16 +310,26 @@ export default function Players() {
   }
 
   function onSubmitTeam(data: TeamForm) {
-    const teamName = `${data.club} - ${data.category}`;
+    const club = data.club.trim();
+    const category = data.category.trim();
+    const teamName = `${club} - ${category}`;
+    const alreadyInList = teams.some(
+      t => t.club?.toLowerCase().trim() === club.toLowerCase() &&
+           t.category?.toLowerCase().trim() === category.toLowerCase()
+    );
     createTeam.mutate(
-      { data: { name: teamName, club: data.club, category: data.category, season: data.season || undefined } },
+      { data: { name: teamName, club, category, season: data.season?.trim() || undefined } },
       {
         onSuccess: (created) => {
           queryClient.invalidateQueries({ queryKey: getListTeamsQueryKey() });
           setShowNewTeam(false);
           teamForm.reset({ club: "", category: "", season: "2025/26" });
-          toast({ title: `Equipo "${created.name}" creado` });
-          setExpandedTeams(prev => new Set([...prev, `club_${data.club}`]));
+          toast({
+            title: alreadyInList
+              ? `"${created.name}" ya existe — seleccionando el existente`
+              : `Equipo "${created.name}" creado`,
+          });
+          setExpandedTeams(prev => new Set([...prev, `club_${club}`]));
           setPlayerTypeFilter("team");
         },
         onError: () => toast({ title: "Error al crear equipo", variant: "destructive" }),
@@ -548,7 +588,13 @@ export default function Players() {
         </div>
       ) : (players as AnyPlayer[]).length > 0 ? (
         <div className="divide-y divide-border">
-          {(players as AnyPlayer[]).map(p => <PlayerRow key={p.id} player={p} />)}
+          {(players as AnyPlayer[]).map(p => (
+            <PlayerRow
+              key={p.id}
+              player={p}
+              teamLabel={p.teamId ? teamLabelMap[p.teamId] : undefined}
+            />
+          ))}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -623,6 +669,31 @@ export default function Players() {
         </div>
 
         {/* Content */}
+        {playerTypeFilter === "team" && duplicateTeamsCount > 0 && (
+          <div className="flex items-center justify-between px-3 py-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+            <span className="text-xs text-yellow-400/80">
+              {duplicateTeamsCount} {duplicateTeamsCount === 1 ? "equipo duplicado detectado" : "equipos duplicados detectados"} (mismo club + categoría)
+            </span>
+            <button
+              onClick={() => {
+                const dupes: string[] = [];
+                const seen = new Map<string, string[]>();
+                for (const t of teams) {
+                  const key = `${(t.club ?? "").toLowerCase().trim()}|${(t.category ?? "").toLowerCase().trim()}`;
+                  if (!seen.has(key)) seen.set(key, []);
+                  seen.get(key)!.push(t.name);
+                }
+                for (const [, names] of seen) {
+                  if (names.length > 1) dupes.push(`"${names.join('" y "')}" (${names.length} duplicados)`);
+                }
+                alert(`Equipos duplicados encontrados:\n\n${dupes.join("\n")}\n\nElimina los duplicados desde tu panel de base de datos.`);
+              }}
+              className="text-[11px] font-semibold text-yellow-400 border border-yellow-500/30 rounded px-2.5 py-1 hover:bg-yellow-500/10 transition-colors"
+            >
+              Ver duplicados
+            </button>
+          </div>
+        )}
         {playerTypeFilter === "team" ? renderTeamFolders() : renderFlatList()}
 
         {/* ── New Team Modal ─────────────────────────────────────────────────────── */}
@@ -668,7 +739,11 @@ export default function Players() {
 
                 {teamForm.watch("club") && teamForm.watch("category") && (
                   <p className="text-[11px] text-muted-foreground bg-secondary/40 px-3 py-2 rounded border border-border/60">
-                    Se creará el equipo: <span className="font-semibold text-foreground">{teamForm.watch("club")} - {teamForm.watch("category")}</span>
+                    Se creará:{" "}
+                    <span className="font-semibold text-foreground">
+                      {teamForm.watch("club")} › {teamForm.watch("category")}
+                      {teamForm.watch("season") && <span className="text-muted-foreground font-normal"> · {teamForm.watch("season")}</span>}
+                    </span>
                   </p>
                 )}
 
@@ -820,14 +895,14 @@ export default function Players() {
                             </Select>
                           ) : (
                             <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
-                              <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span>No hay clubs creados.</span>
+                              <Shield className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" />
+                              <span className="flex-1">Primero crea un equipo desde</span>
                               <button
                                 type="button"
                                 onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
-                                className="text-primary hover:underline font-medium"
+                                className="text-primary hover:underline font-semibold whitespace-nowrap"
                               >
-                                Crear un club
+                                + Nuevo Equipo
                               </button>
                             </div>
                           )}
@@ -850,7 +925,9 @@ export default function Players() {
                                 <SelectContent className="bg-card border-border">
                                   <SelectItem value="none">Sin equipo</SelectItem>
                                   {teamsForClub.map(t => (
-                                    <SelectItem key={t.id} value={t.id.toString()}>{t.category ?? t.name}</SelectItem>
+                                    <SelectItem key={t.id} value={t.id.toString()}>
+                                      {t.category ?? t.name}{t.season ? ` · ${t.season}` : ""}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
