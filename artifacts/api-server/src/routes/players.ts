@@ -310,6 +310,19 @@ router.post("/players", async (req, res): Promise<void> => {
     nationality: parsed.data.nationality,
     injuryStatus: parsed.data.injuryStatus ?? "fit",
     riskLevel: "low",
+    // ── Campos extendidos (antes no se guardaban al crear) ────────────────
+    playerType: parsed.data.playerType ?? "team",
+    teamId: parsed.data.teamId ?? null,
+    subteamId: parsed.data.subteamId ?? null,
+    groupId: parsed.data.groupId ?? null,
+    category: parsed.data.category ?? null,
+    photoUrl: parsed.data.photoUrl ?? null,
+    observations: parsed.data.observations ?? null,
+    physicalStatus: parsed.data.physicalStatus ?? "available",
+    birthDate: parsed.data.birthDate ?? null,
+    birthPlace: parsed.data.birthPlace ?? null,
+    preferredFoot: parsed.data.preferredFoot ?? null,
+    contractEnd: parsed.data.contractEnd ?? null,
   }).returning();
 
   res.status(201).json(GetPlayerResponse.parse(serializePlayer(player)));
@@ -324,6 +337,31 @@ router.get("/players/:id", async (req, res): Promise<void> => {
   if (!player) { res.status(404).json({ error: "Jugador no encontrado" }); return; }
 
   res.json(GetPlayerResponse.parse(serializePlayer(player)));
+});
+
+// ── PATCH /players/:id/status — registrado ANTES que /players/:id ───────────
+router.patch("/players/:id/status", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "ID inválido" }); return; }
+
+  const VALID_STATUSES = ["available", "injured", "doubt", "sanctioned", "recovery"];
+  const { physicalStatus } = req.body as { physicalStatus?: string };
+  if (!physicalStatus || !VALID_STATUSES.includes(physicalStatus)) {
+    res.status(400).json({ error: `physicalStatus debe ser uno de: ${VALID_STATUSES.join(", ")}` });
+    return;
+  }
+
+  const [player] = await db
+    .update(playersTable)
+    .set({ physicalStatus })
+    .where(eq(playersTable.id, id))
+    .returning();
+  if (!player) { res.status(404).json({ error: "Jugador no encontrado" }); return; }
+
+  // Devolver el jugador actualizado sin pasar por GetPlayerResponse.parse()
+  // para evitar errores de validación en datos históricos con campos fuera de enum
+  res.json(serializePlayer(player));
 });
 
 router.patch("/players/:id", async (req, res): Promise<void> => {
@@ -345,31 +383,24 @@ router.patch("/players/:id", async (req, res): Promise<void> => {
   if (parsed.data.dominantFoot !== undefined) updateData.dominantFoot = parsed.data.dominantFoot;
   if (parsed.data.nationality !== undefined) updateData.nationality = parsed.data.nationality;
   if (parsed.data.injuryStatus !== undefined) updateData.injuryStatus = parsed.data.injuryStatus;
+  // ── Campos extendidos (antes no se actualizaban) ──────────────────────────
+  if (parsed.data.physicalStatus !== undefined) updateData.physicalStatus = parsed.data.physicalStatus;
+  if (parsed.data.playerType !== undefined) updateData.playerType = parsed.data.playerType;
+  if (parsed.data.teamId !== undefined) updateData.teamId = parsed.data.teamId ?? null;
+  if (parsed.data.subteamId !== undefined) updateData.subteamId = parsed.data.subteamId ?? null;
+  if (parsed.data.groupId !== undefined) updateData.groupId = parsed.data.groupId ?? null;
+  if (parsed.data.category !== undefined) updateData.category = parsed.data.category ?? null;
+  if (parsed.data.photoUrl !== undefined) updateData.photoUrl = parsed.data.photoUrl ?? null;
+  if (parsed.data.observations !== undefined) updateData.observations = parsed.data.observations ?? null;
+  if (parsed.data.birthDate !== undefined) updateData.birthDate = parsed.data.birthDate ?? null;
+  if (parsed.data.birthPlace !== undefined) updateData.birthPlace = parsed.data.birthPlace ?? null;
+  if (parsed.data.preferredFoot !== undefined) updateData.preferredFoot = parsed.data.preferredFoot ?? null;
+  if (parsed.data.contractEnd !== undefined) updateData.contractEnd = parsed.data.contractEnd ?? null;
 
   const [player] = await db.update(playersTable).set(updateData).where(eq(playersTable.id, params.data.id)).returning();
   if (!player) { res.status(404).json({ error: "Jugador no encontrado" }); return; }
 
   res.json(UpdatePlayerResponse.parse(serializePlayer(player)));
-});
-
-router.patch("/players/:id/status", async (req, res): Promise<void> => {
-  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(raw, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "ID inválido" }); return; }
-
-  const parsed = z.object({
-    physicalStatus: z.enum(["available", "injured", "doubt", "sanctioned", "recovery"]),
-  }).safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
-
-  const [player] = await db
-    .update(playersTable)
-    .set({ physicalStatus: parsed.data.physicalStatus })
-    .where(eq(playersTable.id, id))
-    .returning();
-  if (!player) { res.status(404).json({ error: "Jugador no encontrado" }); return; }
-
-  res.json(serializePlayer(player));
 });
 
 router.delete("/players/:id", async (req, res): Promise<void> => {

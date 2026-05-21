@@ -9,7 +9,6 @@ import {
   useCreateTeam,
   getListTeamsQueryKey,
 } from "@workspace/api-client-react";
-import type { TeamWithSubteams } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import {
@@ -198,8 +197,7 @@ export default function Players() {
     playerType: playerTypeFilter !== "all" ? playerTypeFilter : undefined,
   });
   const { data: teams = [] } = useListTeams();
-  // teams now includes nested subteams (TeamWithSubteams[])
-  const teamsWithSubs = teams;
+  // teams incluye subteams anidados (TeamWithSubteams[]) — ver api.schemas.ts
   const createPlayer = useCreatePlayer();
   const createTeam = useCreateTeam();
   const importCsv = useImportPlayersCsv();
@@ -210,8 +208,13 @@ export default function Players() {
     defaultValues: { name: "", position: "", number: 1, age: 22, injuryStatus: "fit", playerType: "team" },
   });
   const watchedPlayerType = playerForm.watch("playerType");
-  const watchedTeamId = playerForm.watch("teamId");
-  const availableSubteams = teamsWithSubs.find(t => t.id === watchedTeamId)?.subteams ?? [];
+  const watchedTeamId     = playerForm.watch("teamId");
+
+  // Equipos raíz: sólo los que NO tienen parentTeamId
+  const rootTeams = teams.filter(t => t.parentTeamId == null);
+
+  // CATEGORÍA: subteams del equipo raíz seleccionado (de subteamsTable, anidados en team.subteams)
+  const availableSubteams = teams.find(t => t.id === watchedTeamId)?.subteams ?? [];
 
   // ── Team form ────────────────────────────────────────────────────────────────
   const teamForm = useForm<TeamForm>({
@@ -360,10 +363,10 @@ export default function Players() {
   // ─── Team folder view ────────────────────────────────────────────────────────
   const renderTeamFolders = () => {
     // Build hierarchy
-    const topLevelTeams = teams.filter(t => !t.parentTeamId);
+    const topLevelTeams = teams.filter(t => t.parentTeamId == null);
     const childTeamsByParent = new Map<number, typeof teams>();
     for (const t of teams) {
-      if (t.parentTeamId) {
+      if (t.parentTeamId != null) {
         if (!childTeamsByParent.has(t.parentTeamId)) childTeamsByParent.set(t.parentTeamId, []);
         childTeamsByParent.get(t.parentTeamId)!.push(t);
       }
@@ -645,7 +648,7 @@ export default function Players() {
                 <FormField control={teamForm.control} name="parentTeamId" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Subcategoría de</FormLabel>
-                    {teams.filter(t => !t.parentTeamId).length > 0 ? (
+                    {teams.filter(t => t.parentTeamId == null).length > 0 ? (
                       <Select
                         onValueChange={v => field.onChange(v === "none" ? undefined : Number(v))}
                         value={field.value?.toString() ?? "none"}
@@ -657,7 +660,7 @@ export default function Players() {
                         </FormControl>
                         <SelectContent className="bg-card border-border">
                           <SelectItem value="none">Equipo independiente</SelectItem>
-                          {teams.filter(t => !t.parentTeamId).map(t => (
+                          {teams.filter(t => t.parentTeamId == null).map(t => (
                             <SelectItem key={t.id} value={t.id.toString()}>
                               {t.name}{t.category ? ` · ${t.category}` : ""}
                             </SelectItem>
@@ -707,7 +710,7 @@ export default function Players() {
         </Dialog>
 
         {/* ── Add Player Modal ───────────────────────────────────────────────────── */}
-        <Dialog open={showAdd} onOpenChange={(v) => { setShowAdd(v); if (!v) playerForm.reset(); }}>
+        <Dialog open={showAdd} onOpenChange={(v) => { setShowAdd(v); if (!v) { playerForm.reset(); } }}>
           <DialogContent className="bg-card border-border max-w-lg">
             <DialogHeader>
               <DialogTitle className="text-foreground">Nuevo Jugador</DialogTitle>
@@ -793,14 +796,14 @@ export default function Players() {
                   {/* Equipo + Categoría (solo para jugadores de equipo) */}
                   {watchedPlayerType === "team" && (
                     <>
+                      {/* ── EQUIPO: sólo equipos raíz (sin parentTeamId) ── */}
                       <FormField control={playerForm.control} name="teamId" render={({ field }) => (
                         <FormItem className="col-span-2">
                           <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
-                          {teams.length > 0 ? (
+                          {rootTeams.length > 0 ? (
                             <Select
                               onValueChange={v => {
                                 field.onChange(v === "none" ? undefined : Number(v));
-                                // reset subteam whenever parent team changes
                                 playerForm.setValue("subteamId", undefined);
                               }}
                               value={field.value?.toString() ?? "none"}
@@ -812,8 +815,7 @@ export default function Players() {
                               </FormControl>
                               <SelectContent className="bg-card border-border">
                                 <SelectItem value="none">Sin equipo</SelectItem>
-                                {/* Only top-level teams — exclude child teams (parentTeamId set) */}
-                                {teams.filter(t => !t.parentTeamId).map(t => (
+                                {rootTeams.map(t => (
                                   <SelectItem key={t.id} value={t.id.toString()}>
                                     {t.name}{t.category ? ` · ${t.category}` : ""}
                                   </SelectItem>
@@ -837,7 +839,7 @@ export default function Players() {
                         </FormItem>
                       )} />
 
-                      {/* Categoría — dropdown de subequipos; solo aparece cuando el equipo tiene subequipos */}
+                      {/* ── CATEGORÍA: aparece sólo cuando el equipo tiene subteams ── */}
                       {availableSubteams.length > 0 && (
                         <FormField control={playerForm.control} name="subteamId" render={({ field }) => (
                           <FormItem className="col-span-2">
