@@ -914,7 +914,7 @@ export default function Players() {
 
                     <FormField control={playerForm.control} name="preferredFoot" render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Pie preferido</FormLabel>
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Lateralidad dominante</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ""}>
                           <FormControl>
                             <SelectTrigger className="bg-background border-border">
