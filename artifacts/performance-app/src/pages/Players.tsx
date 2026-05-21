@@ -711,275 +711,281 @@ export default function Players() {
 
         {/* ── Add Player Modal ───────────────────────────────────────────────────── */}
         <Dialog open={showAdd} onOpenChange={(v) => { setShowAdd(v); if (!v) { playerForm.reset(); } }}>
-          <DialogContent className="bg-card border-border max-w-lg">
+          <DialogContent className="bg-card border-border max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-foreground">Nuevo Jugador</DialogTitle>
             </DialogHeader>
             <Form {...playerForm}>
-              <form onSubmit={playerForm.handleSubmit(onSubmitPlayer)} className="space-y-4">
+              <form onSubmit={playerForm.handleSubmit(onSubmitPlayer)} className="flex flex-col min-h-0 flex-1">
 
-                {/* Tipo */}
-                <FormField control={playerForm.control} name="playerType" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Tipo</FormLabel>
-                    <div className="flex bg-secondary/40 border border-border rounded-lg p-0.5 gap-0.5">
-                      {[
-                        { value: "team",       label: "Jugador de equipo", icon: <Users className="w-3.5 h-3.5" /> },
-                        { value: "individual", label: "Atleta individual", icon: <User  className="w-3.5 h-3.5" /> },
-                      ].map(opt => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => field.onChange(opt.value)}
-                          className={`flex items-center gap-1.5 flex-1 justify-center py-2 rounded text-xs font-medium transition-colors ${
-                            field.value === opt.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {opt.icon} {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </FormItem>
-                )} />
+                {/* Scrollable fields */}
+                <div className="overflow-y-auto flex-1 space-y-3 pr-0.5">
 
-                {/* Datos básicos */}
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={playerForm.control} name="name" render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Nombre</FormLabel>
-                      <FormControl><Input {...field} placeholder="Nombre completo" className="bg-background border-border" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={playerForm.control} name="position" render={({ field }) => (
+                  {/* Tipo */}
+                  <FormField control={playerForm.control} name="playerType" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Posición</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-background border-border">
-                            <SelectValue placeholder="Posición" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-card border-border">
-                          {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
+                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Tipo</FormLabel>
+                      <div className="flex bg-secondary/40 border border-border rounded-lg p-0.5 gap-0.5">
+                        {[
+                          { value: "team",       label: "Jugador de equipo", icon: <Users className="w-3.5 h-3.5" /> },
+                          { value: "individual", label: "Atleta individual", icon: <User  className="w-3.5 h-3.5" /> },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => field.onChange(opt.value)}
+                            className={`flex items-center gap-1.5 flex-1 justify-center py-2 rounded text-xs font-medium transition-colors ${
+                              field.value === opt.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {opt.icon} {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </FormItem>
                   )} />
 
-                  <FormField control={playerForm.control} name="number" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Dorsal</FormLabel>
-                      <FormControl><Input {...field} type="number" min={1} max={99} className="bg-background border-border" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                  {/* Grid compacto 4 columnas → 2 columnas efectivas por par */}
+                  <div className="grid grid-cols-4 gap-3">
 
-                  <FormField control={playerForm.control} name="age" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Edad</FormLabel>
-                      <FormControl><Input {...field} type="number" className="bg-background border-border" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={playerForm.control} name="name" render={({ field }) => (
+                      <FormItem className="col-span-4">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Nombre</FormLabel>
+                        <FormControl><Input {...field} placeholder="Nombre completo" className="bg-background border-border" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={playerForm.control} name="nationality" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Nacionalidad</FormLabel>
-                      <FormControl><Input {...field} placeholder="País" className="bg-background border-border" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={playerForm.control} name="position" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Posición</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-border">
+                              <SelectValue placeholder="Posición" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-card border-border">
+                            {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  {/* Equipo + Categoría (solo para jugadores de equipo) */}
-                  {watchedPlayerType === "team" && (
-                    <>
-                      {/* ── EQUIPO: sólo equipos raíz (sin parentTeamId) ── */}
-                      <FormField control={playerForm.control} name="teamId" render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
-                          {rootTeams.length > 0 ? (
-                            <Select
-                              onValueChange={v => {
-                                field.onChange(v === "none" ? undefined : Number(v));
-                                playerForm.setValue("subteamId", undefined);
-                              }}
-                              value={field.value?.toString() ?? "none"}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="bg-background border-border">
-                                  <SelectValue placeholder="Sin equipo asignado" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-card border-border">
-                                <SelectItem value="none">Sin equipo</SelectItem>
-                                {rootTeams.map(t => (
-                                  <SelectItem key={t.id} value={t.id.toString()}>
-                                    {t.name}{t.category ? ` · ${t.category}` : ""}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
-                              <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span>No hay equipos creados.</span>
-                              <button
-                                type="button"
-                                onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
-                                className="text-primary hover:underline font-medium"
+                    <FormField control={playerForm.control} name="number" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Dorsal</FormLabel>
+                        <FormControl><Input {...field} type="number" min={1} max={99} className="bg-background border-border" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={playerForm.control} name="age" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Edad</FormLabel>
+                        <FormControl><Input {...field} type="number" className="bg-background border-border" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={playerForm.control} name="nationality" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Nacionalidad</FormLabel>
+                        <FormControl><Input {...field} placeholder="País" className="bg-background border-border" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={playerForm.control} name="physicalStatus" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Estado Físico</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-border">
+                              <SelectValue placeholder="Seleccionar…" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="available">Disponible</SelectItem>
+                            <SelectItem value="doubt">Duda</SelectItem>
+                            <SelectItem value="recovery">Recuperación</SelectItem>
+                            <SelectItem value="injured">Lesionado</SelectItem>
+                            <SelectItem value="sanctioned">Sancionado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    {/* Equipo + Categoría (solo para jugadores de equipo) */}
+                    {watchedPlayerType === "team" && (
+                      <>
+                        {/* ── EQUIPO: sólo equipos raíz (parentTeamId === null) ── */}
+                        <FormField control={playerForm.control} name="teamId" render={({ field }) => (
+                          <FormItem className="col-span-4">
+                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Equipo</FormLabel>
+                            {rootTeams.length > 0 ? (
+                              <Select
+                                onValueChange={v => {
+                                  field.onChange(v === "none" ? undefined : Number(v));
+                                  playerForm.setValue("subteamId", undefined);
+                                }}
+                                value={field.value?.toString() ?? "none"}
                               >
-                                Crear un equipo
-                              </button>
-                            </div>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-
-                      {/* ── CATEGORÍA: aparece sólo cuando el equipo tiene subteams ── */}
-                      {availableSubteams.length > 0 && (
-                        <FormField control={playerForm.control} name="subteamId" render={({ field }) => (
-                          <FormItem className="col-span-2">
-                            <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría</FormLabel>
-                            <Select
-                              onValueChange={v => field.onChange(v === "none" ? undefined : Number(v))}
-                              value={field.value?.toString() ?? "none"}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="bg-background border-border">
-                                  <SelectValue placeholder="Sin categoría" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-card border-border">
-                                <SelectItem value="none">Sin categoría</SelectItem>
-                                {availableSubteams.map(s => (
-                                  <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                <FormControl>
+                                  <SelectTrigger className="bg-background border-border">
+                                    <SelectValue placeholder="Sin equipo asignado" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-card border-border">
+                                  <SelectItem value="none">Sin equipo</SelectItem>
+                                  {rootTeams.map(t => (
+                                    <SelectItem key={t.id} value={t.id.toString()}>
+                                      {t.name}{t.category ? ` · ${t.category}` : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border/50 rounded text-xs text-muted-foreground">
+                                <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>No hay equipos creados.</span>
+                                <button
+                                  type="button"
+                                  onClick={() => { setShowAdd(false); setShowNewTeam(true); }}
+                                  className="text-primary hover:underline font-medium"
+                                >
+                                  Crear un equipo
+                                </button>
+                              </div>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )} />
-                      )}
-                    </>
-                  )}
 
-                  <FormField control={playerForm.control} name="injuryStatus" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Riesgo Lesional</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        {/* ── CATEGORÍA: aparece solo si el equipo tiene subteams ── */}
+                        {availableSubteams.length > 0 && (
+                          <FormField control={playerForm.control} name="subteamId" render={({ field }) => (
+                            <FormItem className="col-span-4">
+                              <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Categoría</FormLabel>
+                              <Select
+                                onValueChange={v => field.onChange(v === "none" ? undefined : Number(v))}
+                                value={field.value?.toString() ?? "none"}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="bg-background border-border">
+                                    <SelectValue placeholder="Sin categoría" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-card border-border">
+                                  <SelectItem value="none">Sin categoría</SelectItem>
+                                  {availableSubteams.map(s => (
+                                    <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        )}
+                      </>
+                    )}
+
+                    <FormField control={playerForm.control} name="injuryStatus" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Riesgo Lesional</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-border">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="fit">Apto</SelectItem>
+                            <SelectItem value="minor_risk">Riesgo Menor</SelectItem>
+                            <SelectItem value="injured">Lesionado</SelectItem>
+                            <SelectItem value="recovery">Recuperación</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={playerForm.control} name="preferredFoot" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Pie preferido</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-border">
+                              <SelectValue placeholder="Seleccionar…" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="right">Derecho</SelectItem>
+                            <SelectItem value="left">Izquierdo</SelectItem>
+                            <SelectItem value="both">Ambos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={playerForm.control} name="birthDate" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Fecha de nacimiento</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-background border-border">
-                            <SelectValue />
-                          </SelectTrigger>
+                          <Input {...field} type="date" className="bg-background border-border" />
                         </FormControl>
-                        <SelectContent className="bg-card border-border">
-                          <SelectItem value="fit">Apto</SelectItem>
-                          <SelectItem value="minor_risk">Riesgo Menor</SelectItem>
-                          <SelectItem value="injured">Lesionado</SelectItem>
-                          <SelectItem value="recovery">Recuperación</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={playerForm.control} name="physicalStatus" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Estado Físico</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                    <FormField control={playerForm.control} name="birthPlace" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Lugar de nacimiento</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-background border-border">
-                            <SelectValue placeholder="Seleccionar…" />
-                          </SelectTrigger>
+                          <Input {...field} placeholder="Ciudad, País" className="bg-background border-border" />
                         </FormControl>
-                        <SelectContent className="bg-card border-border">
-                          <SelectItem value="available">Disponible</SelectItem>
-                          <SelectItem value="doubt">Duda</SelectItem>
-                          <SelectItem value="recovery">Recuperación</SelectItem>
-                          <SelectItem value="injured">Lesionado</SelectItem>
-                          <SelectItem value="sanctioned">Sancionado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  {/* ── Datos personales ─────────────────────────────────── */}
-                  <FormField control={playerForm.control} name="birthDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Fecha de nacimiento</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="date" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={playerForm.control} name="birthPlace" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Lugar de nacimiento</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Ciudad, País" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={playerForm.control} name="height" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Altura (cm)</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="number" min={140} max={220} placeholder="180" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={playerForm.control} name="preferredFoot" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Pie preferido</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                    <FormField control={playerForm.control} name="height" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Altura (cm)</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-background border-border">
-                            <SelectValue placeholder="Seleccionar…" />
-                          </SelectTrigger>
+                          <Input {...field} type="number" min={140} max={220} placeholder="180" className="bg-background border-border" />
                         </FormControl>
-                        <SelectContent className="bg-card border-border">
-                          <SelectItem value="right">Derecho</SelectItem>
-                          <SelectItem value="left">Izquierdo</SelectItem>
-                          <SelectItem value="both">Ambos</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={playerForm.control} name="contractEnd" render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Fin de contrato</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="date" className="bg-background border-border" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={playerForm.control} name="contractEnd" render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Fin de contrato</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="date" className="bg-background border-border" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={playerForm.control} name="observations" render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Observaciones</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Notas sobre el jugador…" className="bg-background border-border text-sm" rows={2} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={playerForm.control} name="observations" render={({ field }) => (
+                      <FormItem className="col-span-4">
+                        <FormLabel className="text-xs text-muted-foreground uppercase tracking-wider">Observaciones</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} placeholder="Notas sobre el jugador…" className="bg-background border-border text-sm" rows={1} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                  </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2">
+                {/* Botones siempre visibles fuera del área scrollable */}
+                <div className="flex justify-end gap-2 pt-3 mt-1 border-t border-border flex-shrink-0">
                   <Button type="button" variant="outline" onClick={() => { setShowAdd(false); playerForm.reset(); }}>
                     Cancelar
                   </Button>
